@@ -1,17 +1,17 @@
 {
-    "name": ":vendor_slug/:package_slug",
-    "description": ":package_description",
+    "name": "bassem-shoukry/laravel-chatwoot",
+    "description": "This is my package laravel-chatwoot",
     "keywords": [
-        ":vendor_name",
+        "BassamShoukry",
         "laravel",
-        ":package_slug"
+        "laravel-chatwoot"
     ],
-    "homepage": "https://github.com/:vendor_slug/:package_slug",
+    "homepage": "https://github.com/bassem-shoukry/laravel-chatwoot",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": "author@domain.com",
+            "name": "BassamShoukry",
+            "email": "basem.shoukry@goodsmartegypt.com",
             "role": "Developer"
         }
     ],
@@ -35,13 +35,13 @@
     },
     "autoload": {
         "psr-4": {
-            "VendorName\\Skeleton\\": "src/",
-            "VendorName\\Skeleton\\Database\\Factories\\": "database/factories/"
+            "BassamShoukry\\LaravelChatwoot\\": "src/",
+            "BassamShoukry\\LaravelChatwoot\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "VendorName\\Skeleton\\Tests\\": "tests/",
+            "BassamShoukry\\LaravelChatwoot\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/"
         }
     },
@@ -63,10 +63,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "VendorName\\Skeleton\\SkeletonServiceProvider"
+                "BassamShoukry\\LaravelChatwoot\\LaravelChatwootServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "VendorName\\Skeleton\\Facades\\Skeleton"
+                "LaravelChatwoot": "BassamShoukry\\LaravelChatwoot\\Facades\\LaravelChatwoot"
             }
         }
     },

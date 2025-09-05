@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace BassamShoukry\LaravelChatwoot\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class LaravelChatwootCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravel-chatwoot';
 
     public $description = 'My command';
 
