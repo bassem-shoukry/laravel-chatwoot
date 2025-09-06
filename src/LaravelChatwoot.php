@@ -304,7 +304,9 @@ class LaravelChatwoot
             $this->account($accountKey);
         }
 
-        return $this->accountManager->testConnection();
+        $accountToTest = $accountKey ?? $this->accountManager->getCurrentAccount();
+        
+        return $this->accountManager->testConnection($accountToTest);
     }
 
     /**
