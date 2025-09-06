@@ -41,6 +41,6 @@ class LaravelChatwoot extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return LaravelChatwootService::class;
+        return 'laravel-chatwoot';
     }
 }

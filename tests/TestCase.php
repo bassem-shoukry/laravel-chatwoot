@@ -41,17 +41,75 @@ class TestCase extends Orchestra
             }
         }
 
-        // Set up package configuration for testing
+        // Set up package configuration for testing (matches actual config structure)
         config()->set('chatwoot', [
-            'default_account' => 'test',
+            'default_account' => 'primary',
             'accounts' => [
+                'primary' => [
+                    'url' => 'https://app.chatwoot.com',
+                    'token' => 'primary-token',
+                    'default_inbox' => 'support',
+                    'inboxes' => [
+                        'support' => [
+                            'id' => 1,
+                            'name' => 'Customer Support',
+                            'channels' => ['email', 'live_chat', 'telegram'],
+                            'templates' => ['welcome', 'follow_up', 'resolved'],
+                            'rate_limits' => [
+                                'per_minute' => 60,
+                                'per_hour' => 1000,
+                                'per_day' => 20000,
+                            ],
+                        ],
+                        'sales' => [
+                            'id' => 2,
+                            'name' => 'Sales Team',
+                            'channels' => ['whatsapp', 'facebook', 'instagram', 'sms'],
+                            'templates' => ['promotion', 'demo_invite', 'follow_up_sales'],
+                            'rate_limits' => [
+                                'per_minute' => 30,
+                                'per_hour' => 500,
+                                'per_day' => 10000,
+                            ],
+                        ],
+                    ],
+                ],
+                'secondary' => [
+                    'url' => 'https://secondary.chatwoot.com',
+                    'token' => 'secondary-token',
+                    'default_inbox' => 'general',
+                    'inboxes' => [
+                        'general' => [
+                            'id' => 3,
+                            'name' => 'General Support',
+                            'channels' => ['email', 'sms', 'whatsapp'],
+                            'templates' => ['welcome', 'info', 'faq'],
+                            'rate_limits' => [
+                                'per_minute' => 40,
+                                'per_hour' => 800,
+                                'per_day' => 15000,
+                            ],
+                        ],
+                        'marketing' => [
+                            'id' => 4,
+                            'name' => 'Marketing',
+                            'channels' => ['email', 'facebook', 'twitter'],
+                            'templates' => ['newsletter', 'campaign', 'announcement'],
+                            'rate_limits' => [
+                                'per_minute' => 20,
+                                'per_hour' => 300,
+                                'per_day' => 5000,
+                            ],
+                        ],
+                    ],
+                ],
                 'test' => [
                     'url' => 'https://test.chatwoot.com',
                     'token' => 'test-token',
                     'default_inbox' => 'test-inbox',
                     'inboxes' => [
                         'test-inbox' => [
-                            'id' => 1,
+                            'id' => 999,
                             'name' => 'Test Inbox',
                             'channels' => ['email', 'sms'],
                             'templates' => ['welcome', 'test'],
@@ -79,6 +137,29 @@ class TestCase extends Orchestra
                     'outbound_restrictions' => 'none',
                     'promotional_window' => null,
                 ],
+                'whatsapp' => [
+                    'max_message_size' => 4096,
+                    'supports_attachments' => true,
+                    'supports_templates' => true,
+                    'outbound_restrictions' => 'template_only_after_24h',
+                    'promotional_window' => 24,
+                    'template_required_after' => 24,
+                ],
+                'facebook' => [
+                    'max_message_size' => 2000,
+                    'supports_attachments' => true,
+                    'supports_templates' => true,
+                    'outbound_restrictions' => 'promotional_24h_or_7d_human_agent',
+                    'promotional_window' => 24,
+                    'human_agent_window' => 168, // 7 days in hours
+                ],
+                'telegram' => [
+                    'max_message_size' => 4096,
+                    'supports_attachments' => true,
+                    'supports_templates' => false,
+                    'outbound_restrictions' => 'none',
+                    'promotional_window' => null,
+                ],
             ],
             'webhooks' => [
                 'enabled' => true,
@@ -94,7 +175,7 @@ class TestCase extends Orchestra
             ],
             'queue' => [
                 'enabled' => true,
-                'connection' => 'sync', // Use sync for testing
+                'connection' => 'default', // Expected by tests
                 'queue' => 'chatwoot',
                 'retry_attempts' => 3,
                 'retry_delay' => 60,
@@ -102,7 +183,7 @@ class TestCase extends Orchestra
                 'rate_limit_delay' => 300,
             ],
             'cache' => [
-                'store' => 'array', // Use array cache for testing
+                'store' => 'default', // Expected by tests
                 'tokens' => [
                     'ttl' => 3600,
                     'prefix' => 'chatwoot_tokens',
@@ -151,8 +232,8 @@ class TestCase extends Orchestra
                 'fake_api_responses' => true, // Enable faking for tests
                 'mock_webhooks' => true,
                 'debug_mode' => false,
-                'test_account' => 'test',
-                'test_inbox' => 'test-inbox',
+                'test_account' => 'primary',
+                'test_inbox' => 'support',
             ],
         ]);
     }

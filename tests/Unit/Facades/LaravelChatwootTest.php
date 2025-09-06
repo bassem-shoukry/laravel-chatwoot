@@ -61,7 +61,20 @@ describe('LaravelChatwoot Facade', function () {
     it('can call static factory method through facade', function () {
         $mockService = Mockery::mock(LaravelChatwootService::class);
         
-        LaravelChatwoot::shouldReceive('for')
+        $mockService->shouldReceive('account')
+            ->with('primary')
+            ->once()
+            ->andReturnSelf();
+            
+        $mockService->shouldReceive('inbox')
+            ->with('support')
+            ->once()
+            ->andReturnSelf();
+        
+        $this->app->instance('laravel-chatwoot', $mockService);
+        
+        // Mock static method on LaravelChatwoot service class
+        LaravelChatwootService::shouldReceive('for')
             ->with('primary', 'support')
             ->once()
             ->andReturn($mockService);
@@ -74,7 +87,7 @@ describe('LaravelChatwoot Facade', function () {
     describe('Facade Method Availability', function () {
         beforeEach(function () {
             $this->mockService = Mockery::mock(LaravelChatwootService::class);
-            $this->app->instance(LaravelChatwootService::class, $this->mockService);
+            $this->app->instance('laravel-chatwoot', $this->mockService);
         });
 
         it('provides account selection method', function () {

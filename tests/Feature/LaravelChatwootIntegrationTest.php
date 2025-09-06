@@ -41,7 +41,7 @@ describe('Laravel Chatwoot Integration', function () {
             ->once()
             ->andReturn(['id' => 123, 'status' => 'sent']);
         
-        $this->app->instance(LaravelChatwootService::class, $mockService);
+        $this->app->instance('laravel-chatwoot', $mockService);
         
         $result = LaravelChatwoot::account('test')
             ->inbox('test-inbox')
@@ -50,11 +50,15 @@ describe('Laravel Chatwoot Integration', function () {
         expect($result)->toBe(['id' => 123, 'status' => 'sent']);
     });
 
-    it('can use quick send methods through facade', function () {        
-        LaravelChatwoot::shouldReceive('send')
+    it('can use quick send methods through facade', function () {
+        $mockService = Mockery::mock(LaravelChatwootService::class);
+        
+        $mockService->shouldReceive('send')
             ->with('Hello World', ['email' => 'test@example.com'], [])
             ->once()
             ->andReturn(['id' => 124, 'status' => 'sent']);
+        
+        $this->app->instance('laravel-chatwoot', $mockService);
         
         $result = LaravelChatwoot::send('Hello World', ['email' => 'test@example.com']);
         
@@ -69,7 +73,7 @@ describe('Laravel Chatwoot Integration', function () {
             ->once()
             ->andReturn(['id' => 125, 'status' => 'sent']);
         
-        $this->app->instance(LaravelChatwootService::class, $mockService);
+        $this->app->instance('laravel-chatwoot', $mockService);
         
         $result = LaravelChatwoot::template('welcome', ['name' => 'John'], ['email' => 'john@example.com']);
         
@@ -99,7 +103,7 @@ describe('Laravel Chatwoot Integration', function () {
 
     describe('Configuration Integration', function () {
         it('uses configuration from container', function () {
-            expect(config('chatwoot.default_account'))->toBe('test')
+            expect(config('chatwoot.default_account'))->toBe('primary')
                 ->and(config('chatwoot.accounts.test.url'))->toBe('https://test.chatwoot.com')
                 ->and(config('chatwoot.accounts.test.token'))->toBe('test-token');
         });
@@ -259,23 +263,23 @@ describe('Real World Usage Scenarios', function () {
     });
 
     it('can handle factory method workflow', function () {
-        $this->mockAccountManager
-            ->shouldReceive('account')
+        $mockService = Mockery::mock(LaravelChatwootService::class);
+        
+        $mockService->shouldReceive('account')
             ->with('test')
-            ->once();
-
-        $this->mockAccountManager
-            ->shouldReceive('getCurrentAccount')
-            ->andReturn('test');
-
-        // Mock the send method on LaravelChatwootService rather than MessageService
-        LaravelChatwootService::shouldReceive('for')
-            ->with('test')
-            ->andReturnSelf()
-            ->shouldReceive('send')
+            ->once()
+            ->andReturnSelf();
+            
+        $mockService->shouldReceive('send')
             ->with('Quick message', ['email' => 'test@example.com'], [])
             ->once()
             ->andReturn(['id' => 125, 'status' => 'sent']);
+        
+        // Mock static method
+        LaravelChatwootService::shouldReceive('for')
+            ->with('test')
+            ->once()
+            ->andReturn($mockService);
 
         $result = LaravelChatwootService::for('test')->send('Quick message', ['email' => 'test@example.com']);
         

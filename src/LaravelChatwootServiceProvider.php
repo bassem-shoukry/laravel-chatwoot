@@ -115,7 +115,8 @@ class LaravelChatwootServiceProvider extends PackageServiceProvider
             return new ChannelService;
         });
 
-        $this->app->singleton('laravel-chatwoot', function ($app) {
+        // Register main service class
+        $this->app->singleton(LaravelChatwoot::class, function ($app) {
             return new LaravelChatwoot(
                 $app->make(AccountManager::class),
                 $app->make(InboxManager::class),
@@ -124,6 +125,11 @@ class LaravelChatwootServiceProvider extends PackageServiceProvider
                 $app->make(RateLimitService::class),
                 $app->make(WebhookHandler::class)
             );
+        });
+
+        // Register service alias for facade
+        $this->app->singleton('laravel-chatwoot', function ($app) {
+            return $app->make(LaravelChatwoot::class);
         });
     }
 }
