@@ -10,9 +10,12 @@ describe('LaravelChatwoot Facade', function () {
     });
 
     it('returns correct facade accessor', function () {
-        $accessor = LaravelChatwoot::getFacadeAccessor();
+        $reflection = new \ReflectionClass(LaravelChatwoot::class);
+        $method = $reflection->getMethod('getFacadeAccessor');
+        $method->setAccessible(true);
+        $accessor = $method->invoke(new LaravelChatwoot);
         
-        expect($accessor)->toBe(LaravelChatwootService::class);
+        expect($accessor)->toBe('laravel-chatwoot');
     });
 
     it('can access facade methods', function () {
@@ -61,23 +64,12 @@ describe('LaravelChatwoot Facade', function () {
     it('can call static factory method through facade', function () {
         $mockService = Mockery::mock(LaravelChatwootService::class);
         
-        $mockService->shouldReceive('account')
-            ->with('primary')
-            ->once()
-            ->andReturnSelf();
-            
-        $mockService->shouldReceive('inbox')
-            ->with('support')
-            ->once()
-            ->andReturnSelf();
-        
-        $this->app->instance('laravel-chatwoot', $mockService);
-        
-        // Mock static method on LaravelChatwoot service class
-        LaravelChatwootService::shouldReceive('for')
+        $mockService->shouldReceive('for')
             ->with('primary', 'support')
             ->once()
             ->andReturn($mockService);
+        
+        $this->app->instance('laravel-chatwoot', $mockService);
         
         $result = LaravelChatwoot::for('primary', 'support');
         
@@ -293,10 +285,13 @@ describe('LaravelChatwoot Facade', function () {
         });
 
         it('can be mocked for testing', function () {
-            LaravelChatwoot::shouldReceive('sendMessage')
+            $mockService = Mockery::mock(LaravelChatwootService::class);
+            $mockService->shouldReceive('sendMessage')
                 ->with(['content' => 'Test'])
                 ->once()
                 ->andReturn(['id' => 999, 'status' => 'mocked']);
+
+            $this->app->instance('laravel-chatwoot', $mockService);
 
             $result = LaravelChatwoot::sendMessage(['content' => 'Test']);
 
@@ -304,13 +299,16 @@ describe('LaravelChatwoot Facade', function () {
         });
 
         it('can be partially mocked', function () {
-            LaravelChatwoot::shouldReceive('account')
+            $mockService = Mockery::mock(LaravelChatwootService::class);
+            $mockService->shouldReceive('account')
                 ->with('primary')
                 ->once()
                 ->andReturnSelf()
                 ->shouldReceive('getCurrentAccount')
                 ->once()
                 ->andReturn(['id' => 1, 'name' => 'Mocked Account']);
+
+            $this->app->instance('laravel-chatwoot', $mockService);
 
             $chatwoot = LaravelChatwoot::account('primary');
             $account = LaravelChatwoot::getCurrentAccount();

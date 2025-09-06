@@ -13,14 +13,17 @@ describe('Laravel Chatwoot Integration', function () {
     });
 
     it('can use fluent factory method through facade', function () {
-        LaravelChatwoot::shouldReceive('for')
+        $mockService = Mockery::mock(LaravelChatwootService::class);
+        $mockService->shouldReceive('for')
             ->with('test', 'test-inbox')
             ->once()
-            ->andReturnSelf();
+            ->andReturn($mockService);
+        
+        $this->app->instance('laravel-chatwoot', $mockService);
         
         $result = LaravelChatwoot::for('test', 'test-inbox');
         
-        expect($result)->toBeInstanceOf(Mockery\MockInterface::class);
+        expect($result)->toBe($mockService);
     });
 
     it('can chain methods using facade', function () {
@@ -54,7 +57,7 @@ describe('Laravel Chatwoot Integration', function () {
         $mockService = Mockery::mock(LaravelChatwootService::class);
         
         $mockService->shouldReceive('send')
-            ->with('Hello World', ['email' => 'test@example.com'], [])
+            ->with('Hello World', ['email' => 'test@example.com'])
             ->once()
             ->andReturn(['id' => 124, 'status' => 'sent']);
         
@@ -69,7 +72,7 @@ describe('Laravel Chatwoot Integration', function () {
         $mockService = Mockery::mock(LaravelChatwootService::class);
         
         $mockService->shouldReceive('template')
-            ->with('welcome', ['name' => 'John'], ['email' => 'john@example.com'], [])
+            ->with('welcome', ['name' => 'John'], ['email' => 'john@example.com'])
             ->once()
             ->andReturn(['id' => 125, 'status' => 'sent']);
         
@@ -103,7 +106,7 @@ describe('Laravel Chatwoot Integration', function () {
 
     describe('Configuration Integration', function () {
         it('uses configuration from container', function () {
-            expect(config('chatwoot.default_account'))->toBe('primary')
+            expect(config('chatwoot.default_account'))->toBe('test')
                 ->and(config('chatwoot.accounts.test.url'))->toBe('https://test.chatwoot.com')
                 ->and(config('chatwoot.accounts.test.token'))->toBe('test-token');
         });
@@ -165,9 +168,12 @@ describe('Laravel Chatwoot Integration', function () {
 
     describe('Mocking Integration', function () {
         it('can mock facade methods for testing', function () {
-            LaravelChatwoot::shouldReceive('testConnection')
+            $mockService = Mockery::mock(LaravelChatwootService::class);
+            $mockService->shouldReceive('testConnection')
                 ->once()
                 ->andReturn(['status' => 'connected', 'account_id' => 1]);
+            
+            $this->app->instance('laravel-chatwoot', $mockService);
             
             $result = LaravelChatwoot::testConnection();
             
@@ -175,9 +181,12 @@ describe('Laravel Chatwoot Integration', function () {
         });
 
         it('can partially mock facade methods', function () {
-            LaravelChatwoot::shouldReceive('getCurrentAccount')
+            $mockService = Mockery::mock(LaravelChatwootService::class);
+            $mockService->shouldReceive('getCurrentAccount')
                 ->once()
                 ->andReturn(['id' => 1, 'name' => 'Mocked Account']);
+            
+            $this->app->instance('laravel-chatwoot', $mockService);
             
             $result = LaravelChatwoot::getCurrentAccount();
             
@@ -265,23 +274,20 @@ describe('Real World Usage Scenarios', function () {
     it('can handle factory method workflow', function () {
         $mockService = Mockery::mock(LaravelChatwootService::class);
         
-        $mockService->shouldReceive('account')
+        $mockService->shouldReceive('for')
             ->with('test')
             ->once()
             ->andReturnSelf();
             
         $mockService->shouldReceive('send')
-            ->with('Quick message', ['email' => 'test@example.com'], [])
+            ->with('Quick message', ['email' => 'test@example.com'])
             ->once()
             ->andReturn(['id' => 125, 'status' => 'sent']);
         
-        // Mock static method
-        LaravelChatwootService::shouldReceive('for')
-            ->with('test')
-            ->once()
-            ->andReturn($mockService);
+        // Register mock service in container
+        $this->app->instance('laravel-chatwoot', $mockService);
 
-        $result = LaravelChatwootService::for('test')->send('Quick message', ['email' => 'test@example.com']);
+        $result = LaravelChatwoot::for('test')->send('Quick message', ['email' => 'test@example.com']);
         
         expect($result)->toBe(['id' => 125, 'status' => 'sent']);
     });

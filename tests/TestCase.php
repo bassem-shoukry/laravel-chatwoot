@@ -33,17 +33,13 @@ class TestCase extends Orchestra
             'prefix' => '',
         ]);
 
-        // Load migrations if they exist
-        $migrationPath = __DIR__ . '/../database/migrations';
-        if (is_dir($migrationPath)) {
-            foreach (glob($migrationPath . '/*.php') as $migration) {
-                $this->loadMigrationsFrom($migration);
-            }
-        }
+        // Note: Migrations are available but not auto-loaded to avoid setup conflicts
+        // Individual tests can load migrations if needed using:
+        // $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
         // Set up package configuration for testing (matches actual config structure)
         config()->set('chatwoot', [
-            'default_account' => 'primary',
+            'default_account' => 'test',
             'accounts' => [
                 'primary' => [
                     'url' => 'https://app.chatwoot.com',
@@ -109,7 +105,7 @@ class TestCase extends Orchestra
                     'default_inbox' => 'test-inbox',
                     'inboxes' => [
                         'test-inbox' => [
-                            'id' => 999,
+                            'id' => 1,
                             'name' => 'Test Inbox',
                             'channels' => ['email', 'sms'],
                             'templates' => ['welcome', 'test'],
@@ -175,7 +171,7 @@ class TestCase extends Orchestra
             ],
             'queue' => [
                 'enabled' => true,
-                'connection' => 'default', // Expected by tests
+                'connection' => 'sync', // Expected by tests
                 'queue' => 'chatwoot',
                 'retry_attempts' => 3,
                 'retry_delay' => 60,
@@ -183,7 +179,7 @@ class TestCase extends Orchestra
                 'rate_limit_delay' => 300,
             ],
             'cache' => [
-                'store' => 'default', // Expected by tests
+                'store' => 'array', // Expected by tests
                 'tokens' => [
                     'ttl' => 3600,
                     'prefix' => 'chatwoot_tokens',
