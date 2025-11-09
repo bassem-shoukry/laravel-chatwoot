@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 
 class TemplateService
 {
@@ -171,8 +170,6 @@ class TemplateService
             $validated = $this->validateTemplateData($templateData);
 
             if (! $validated['valid']) {
-                Log::error('Template validation failed', $validated['errors']);
-
                 return false;
             }
 
@@ -184,14 +181,10 @@ class TemplateService
                     return $this->storeInFile($templateData);
 
                 default:
-                    Log::error("Unsupported storage type: {$this->storageType}");
-
                     return false;
             }
 
         } catch (\Exception $e) {
-            Log::error('Failed to store template: ' . $e->getMessage(), ['template' => $templateData]);
-
             return false;
         }
     }
@@ -213,8 +206,6 @@ class TemplateService
                     return false;
             }
         } catch (\Exception $e) {
-            Log::error('Failed to delete template: ' . $e->getMessage());
-
             return false;
         }
     }
@@ -234,12 +225,6 @@ class TemplateService
             // Clear all template cache
             $cache->flush(); // This might be too aggressive, consider using tags
         }
-
-        Log::info('Template cache cleared', [
-            'template_key' => $templateKey,
-            'account_key'  => $accountKey,
-            'inbox_key'    => $inboxKey,
-        ]);
     }
 
     /**
@@ -257,8 +242,6 @@ class TemplateService
                 $results['errors'][] = 'Failed to import template: ' . ($template['template_key'] ?? 'unknown');
             }
         }
-
-        Log::info('Template import completed', $results);
 
         return $results;
     }
@@ -307,7 +290,7 @@ class TemplateService
                 })->toArray();
 
         } catch (\Exception $e) {
-            Log::error('Failed to get template statistics: ' . $e->getMessage());
+            // Continue with default stats
         }
 
         return $stats;

@@ -7,7 +7,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class AccountManager
 {
@@ -124,7 +123,6 @@ class AccountManager
             $url = $this->getAccountUrl($currentAccount);
 
             if (! $token || ! $url) {
-                Log::warning("Incomplete account info for account: $currentAccount");
                 return null;
             }
 
@@ -134,7 +132,6 @@ class AccountManager
                 'token' => $token,
             ];
         } catch (AccountNotFoundException $e) {
-            Log::warning("Current account not found: $currentAccount - " . $e->getMessage());
             return null;
         }
     }
@@ -169,8 +166,6 @@ class AccountManager
                 try {
                     return Crypt::decrypt($config['token']);
                 } catch (\Exception $e) {
-                    Log::warning("Failed to decrypt token for account $accountId: " . $e->getMessage());
-
                     return null;
                 }
             }
@@ -213,12 +208,8 @@ class AccountManager
                     ->update(['last_verified_at' => now()]);
             }
 
-            Log::info("Token refreshed successfully for account: $accountId");
-
             return true;
         } catch (\Exception $e) {
-            Log::error("Failed to refresh token for account $accountId: " . $e->getMessage());
-
             return false;
         }
     }
@@ -253,12 +244,8 @@ class AccountManager
             // Clear cache for this account
             $this->clearAccountCache($accountData['account_key']);
 
-            Log::info("Account stored successfully: {$accountData['account_key']}");
-
             return true;
         } catch (\Exception $e) {
-            Log::error("Failed to store account {$accountData['account_key']}: " . $e->getMessage());
-
             return false;
         }
     }
@@ -277,12 +264,8 @@ class AccountManager
 
             $this->clearAccountCache($accountId);
 
-            Log::info("Account removed successfully: $accountId");
-
             return true;
         } catch (\Exception $e) {
-            Log::error("Failed to remove account $accountId: " . $e->getMessage());
-
             return false;
         }
     }

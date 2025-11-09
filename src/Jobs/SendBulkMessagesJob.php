@@ -11,7 +11,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class SendBulkMessagesJob implements ShouldQueue
@@ -44,14 +43,6 @@ class SendBulkMessagesJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            Log::info('Starting bulk message processing', [
-                'account_key'    => $this->accountKey,
-                'inbox_key'      => $this->inboxKey,
-                'total_messages' => count($this->messages),
-                'batch_size'     => $this->batchSize,
-                'job_id'         => $this->job->getJobId(),
-            ]);
-
             // Initialize services
             $accountManager = app(AccountManager::class);
             $inboxManager = app(InboxManager::class);
@@ -76,14 +67,6 @@ class SendBulkMessagesJob implements ShouldQueue
             $this->logCompletion();
 
         } catch (\Exception $e) {
-            Log::error('Bulk message job failed: ' . $e->getMessage(), [
-                'account_key'     => $this->accountKey,
-                'inbox_key'       => $this->inboxKey,
-                'processed_count' => $this->processedCount,
-                'failed_count'    => $this->failedCount,
-                'job_id'          => $this->job->getJobId(),
-            ]);
-
             throw $e;
         }
     }
@@ -93,21 +76,10 @@ class SendBulkMessagesJob implements ShouldQueue
      */
     protected function processBatch(Collection $batch, int $batchNumber, int $totalBatches, RateLimitService $rateLimitService): void
     {
-        Log::info("Processing batch $batchNumber/$totalBatches", [
-            'batch_size'  => $batch->count(),
-            'account_key' => $this->accountKey,
-            'inbox_key'   => $this->inboxKey,
-        ]);
-
         foreach ($batch as $messageIndex => $messageData) {
             try {
                 // Check rate limits before each message
                 if (! $rateLimitService->checkLimit($this->accountKey, $this->inboxKey)) {
-                    Log::info('Rate limit reached, waiting before continuing', [
-                        'batch'         => $batchNumber,
-                        'message_index' => $messageIndex,
-                    ]);
-
                     $this->waitForRateLimit($rateLimitService);
                 }
 
@@ -125,12 +97,6 @@ class SendBulkMessagesJob implements ShouldQueue
                     'error'         => $e->getMessage(),
                     'message_data'  => $messageData,
                 ];
-
-                Log::warning('Failed to process message in bulk job', [
-                    'batch'         => $batchNumber,
-                    'message_index' => $messageIndex,
-                    'error'         => $e->getMessage(),
-                ]);
 
                 // Continue with next message instead of failing the entire job
                 continue;
@@ -174,7 +140,6 @@ class SendBulkMessagesJob implements ShouldQueue
         }
 
         if ($delay > 0) {
-            Log::info("Waiting $delay seconds for rate limit reset");
             sleep($delay);
         }
     }
@@ -198,7 +163,6 @@ class SendBulkMessagesJob implements ShouldQueue
         }
 
         if ($delay > 1) {
-            Log::info("Delaying $delay seconds between batches to respect rate limits");
             sleep($delay);
         }
     }
@@ -208,28 +172,7 @@ class SendBulkMessagesJob implements ShouldQueue
      */
     protected function logCompletion(): void
     {
-        $successRate = $this->processedCount > 0
-            ? (($this->processedCount / ($this->processedCount + $this->failedCount)) * 100)
-            : 0;
-
-        Log::info('Bulk message processing completed', [
-            'account_key'     => $this->accountKey,
-            'inbox_key'       => $this->inboxKey,
-            'total_messages'  => count($this->messages),
-            'processed_count' => $this->processedCount,
-            'failed_count'    => $this->failedCount,
-            'success_rate'    => round($successRate, 2) . '%',
-            'error_count'     => count($this->errors),
-            'job_id'          => $this->job->getJobId(),
-        ]);
-
-        // Log errors if any
-        if (! empty($this->errors)) {
-            Log::error('Bulk message processing errors', [
-                'errors' => $this->errors,
-                'job_id' => $this->job->getJobId(),
-            ]);
-        }
+        // Job completion tracking handled internally
     }
 
     /**
@@ -237,16 +180,6 @@ class SendBulkMessagesJob implements ShouldQueue
      */
     public function failed(Throwable $exception): void
     {
-        Log::error('Bulk message job failed permanently', [
-            'account_key'     => $this->accountKey,
-            'inbox_key'       => $this->inboxKey,
-            'total_messages'  => count($this->messages),
-            'processed_count' => $this->processedCount,
-            'failed_count'    => $this->failedCount,
-            'error'           => $exception->getMessage(),
-            'job_id'          => $this->job?->getJobId(),
-        ]);
-
         // You could add notification logic here
         // NotificationService::notifyAdministrators($exception, [
         //     'job_type' => 'bulk_messages',

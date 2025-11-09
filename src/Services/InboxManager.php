@@ -5,7 +5,6 @@ namespace BassamShoukry\LaravelChatwoot\Services;
 use BassamShoukry\LaravelChatwoot\Exceptions\AccountNotFoundException;
 use BassamShoukry\LaravelChatwoot\Exceptions\InboxNotFoundException;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 
 class InboxManager
 {
@@ -171,7 +170,6 @@ class InboxManager
                 'inbox_name' => $inboxConfig['name'] ?? $currentInbox,
             ];
         } catch (\Exception $e) {
-            Log::warning('Failed to get current inbox info: ' . $e->getMessage());
             return null;
         }
     }
@@ -295,8 +293,6 @@ class InboxManager
         // Select the first compatible inbox (you could add more logic here for prioritization)
         $selectedInbox = $compatibleInboxes->first();
 
-        Log::info("Auto-selected inbox '{$selectedInbox['inbox_key']}' for channel '$channel'");
-
         return $this->inbox($selectedInbox['inbox_key']);
     }
 
@@ -366,8 +362,6 @@ class InboxManager
 
             return $this->validateInbox($currentAccount, $currentInbox);
         } catch (\Exception $e) {
-            Log::warning('Inbox configuration validation failed: ' . $e->getMessage());
-
             return false;
         }
     }

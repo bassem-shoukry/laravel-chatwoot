@@ -12,7 +12,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class SendMessageJob implements ShouldQueue
@@ -60,21 +59,10 @@ class SendMessageJob implements ShouldQueue
                 $maxDelay = config('chatwoot.queue.rate_limit_delay', 300);
 
                 if ($delay > $maxDelay) {
-                    Log::warning("Rate limit delay ($delay s) exceeds maximum ($maxDelay s), failing job", [
-                        'account_key' => $this->accountKey,
-                        'inbox_key'   => $this->inboxKey,
-                        'job_id'      => $this->job->getJobId(),
-                    ]);
                     $this->fail('Rate limit delay exceeds maximum allowed time');
 
                     return;
                 }
-
-                Log::info("Rate limit exceeded, releasing job for $delay seconds", [
-                    'account_key' => $this->accountKey,
-                    'inbox_key'   => $this->inboxKey,
-                    'job_id'      => $this->job->getJobId(),
-                ]);
 
                 $this->release($delay);
 
@@ -99,22 +87,7 @@ class SendMessageJob implements ShouldQueue
             // Update message status in database
             $this->updateMessageStatus('sent', $result);
 
-            Log::info('Message sent successfully via queue', [
-                'account_key' => $this->accountKey,
-                'inbox_key'   => $this->inboxKey,
-                'message_id'  => $result['message_id'] ?? null,
-                'job_id'      => $this->job->getJobId(),
-            ]);
-
         } catch (\Exception $e) {
-            Log::error('Failed to send queued message: ' . $e->getMessage(), [
-                'account_key'  => $this->accountKey,
-                'inbox_key'    => $this->inboxKey,
-                'message_data' => $this->messageData,
-                'attempt'      => $this->attempts(),
-                'job_id'       => $this->job->getJobId(),
-            ]);
-
             // Update message status
             $this->updateMessageStatus('failed', null, $e->getMessage());
 
@@ -127,15 +100,6 @@ class SendMessageJob implements ShouldQueue
      */
     public function failed(Throwable $exception): void
     {
-        Log::error('Message job failed permanently', [
-            'account_key'  => $this->accountKey,
-            'inbox_key'    => $this->inboxKey,
-            'message_data' => $this->messageData,
-            'error'        => $exception->getMessage(),
-            'attempts'     => $this->attempts(),
-            'job_id'       => $this->job?->getJobId(),
-        ]);
-
         // Update message status to failed
         $this->updateMessageStatus('failed', null, $exception->getMessage());
 
@@ -183,7 +147,7 @@ class SendMessageJob implements ShouldQueue
                 ->update($updateData);
 
         } catch (\Exception $e) {
-            Log::warning('Failed to update message status in database: ' . $e->getMessage());
+            // Continue silently on status update failure
         }
     }
 

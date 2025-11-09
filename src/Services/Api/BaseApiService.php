@@ -5,7 +5,6 @@ namespace BassamShoukry\LaravelChatwoot\Services\Api;
 use BassamShoukry\LaravelChatwoot\Exceptions\ChatwootApiException;
 use BassamShoukry\LaravelChatwoot\Services\AccountManager;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 abstract class BaseApiService
 {
@@ -49,13 +48,6 @@ abstract class BaseApiService
 
         for ($attempt = 1; $attempt <= $retryAttempts; $attempt++) {
             try {
-                Log::debug("Chatwoot API request attempt $attempt", [
-                    'method' => $method,
-                    'url'    => $url,
-                    'data'   => $data,
-                    'params' => $params,
-                ]);
-
                 $response = Http::timeout($timeout)
                     ->withHeaders([
                         'api_access_token' => $token,
@@ -70,13 +62,6 @@ abstract class BaseApiService
 
                 if ($response->successful()) {
                     $responseData = $response->json() ?? [];
-
-                    Log::info('Chatwoot API request successful', [
-                        'method'   => $method,
-                        'endpoint' => $endpoint,
-                        'status'   => $response->status(),
-                        'attempt'  => $attempt,
-                    ]);
 
                     return $responseData;
                 }
@@ -105,14 +90,6 @@ abstract class BaseApiService
                 );
 
                 if ($attempt < $retryAttempts) {
-                    Log::warning('Chatwoot API request failed, retrying', [
-                        'method'      => $method,
-                        'endpoint'    => $endpoint,
-                        'status'      => $statusCode,
-                        'attempt'     => $attempt,
-                        'retry_in_ms' => $retryDelay,
-                    ]);
-
                     usleep($retryDelay * 1000); // Convert to microseconds
                     $retryDelay *= 2; // Exponential backoff
                 }
@@ -129,13 +106,6 @@ abstract class BaseApiService
                 );
 
                 if ($attempt < $retryAttempts) {
-                    Log::warning('Chatwoot API network error, retrying', [
-                        'method'   => $method,
-                        'endpoint' => $endpoint,
-                        'error'    => $e->getMessage(),
-                        'attempt'  => $attempt,
-                    ]);
-
                     usleep($retryDelay * 1000);
                     $retryDelay *= 2;
                 }
@@ -143,12 +113,6 @@ abstract class BaseApiService
         }
 
         // All retry attempts failed
-        Log::error("Chatwoot API request failed after $retryAttempts attempts", [
-            'method'     => $method,
-            'endpoint'   => $endpoint,
-            'last_error' => $lastException->getMessage(),
-        ]);
-
         throw $lastException;
     }
 

@@ -12,7 +12,6 @@ use BassamShoukry\LaravelChatwoot\Services\Api\MessagesApi;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class ApiClient
 {
@@ -237,9 +236,6 @@ class ApiClient
                     throw $e;
                 }
 
-                // Log retry attempt
-                Log::warning("API request failed, attempt $attempt/$retryAttempts: " . $e->getMessage());
-
                 if ($attempt < $retryAttempts) {
                     usleep($retryDelay * 1000 * $attempt);
                 }
@@ -268,16 +264,6 @@ class ApiClient
             $client->withoutVerifying();
         }
 
-        // Log request if enabled
-        if ($this->config['logging']['log_requests'] ?? false) {
-            Log::info('Chatwoot API Request', [
-                'method' => $method,
-                'url'    => $url,
-                'data'   => $data,
-                'params' => $params,
-            ]);
-        }
-
         $response = match (strtoupper($method)) {
             'GET'    => $client->get($url, $params),
             'POST'   => $client->post($url, $data),
@@ -286,14 +272,6 @@ class ApiClient
             'DELETE' => $client->delete($url),
             default  => throw new \InvalidArgumentException("Unsupported HTTP method: $method")
         };
-
-        // Log response if enabled
-        if ($this->config['logging']['log_responses'] ?? false) {
-            Log::info('Chatwoot API Response', [
-                'status' => $response->status(),
-                'body'   => $response->json(),
-            ]);
-        }
 
         return $response;
     }
@@ -306,12 +284,6 @@ class ApiClient
         $statusCode = $response->status();
         $responseBody = $response->json() ?? [];
         $errorMessage = $responseBody['message'] ?? $responseBody['error'] ?? 'Chatwoot API error';
-
-        Log::error('Chatwoot API Error', [
-            'status_code'   => $statusCode,
-            'response_body' => $responseBody,
-            'url'           => $response->effectiveUri(),
-        ]);
 
         switch ($statusCode) {
             case 401:

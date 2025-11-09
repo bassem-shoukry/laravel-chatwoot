@@ -9,7 +9,6 @@ use BassamShoukry\LaravelChatwoot\Jobs\SendBulkMessagesJob;
 use BassamShoukry\LaravelChatwoot\Jobs\SendMessageJob;
 use Exception;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use InvalidArgumentException;
 use RuntimeException;
@@ -93,11 +92,6 @@ class MessageService
             ];
 
         } catch (Exception $e) {
-            Log::error('Failed to send message: ' . $e->getMessage(), [
-                'message_data' => $messageData,
-                'routing'      => $routing ?? null,
-            ]);
-
             // Log the failure
             if (isset($routing)) {
                 $this->logMessage($messageData, [], 'failed', $routing, $e->getMessage());
@@ -150,12 +144,6 @@ class MessageService
             return $this->sendMessage($messageData);
 
         } catch (Exception $e) {
-            Log::error('Failed to send template message: ' . $e->getMessage(), [
-                'template_key' => $templateKey,
-                'variables'    => $variables,
-                'options'      => $options,
-            ]);
-
             return [
                 'success'      => false,
                 'error'        => $e->getMessage(),
@@ -200,8 +188,6 @@ class MessageService
                 ];
             }
         }
-
-        Log::info('Bulk messages sent', $results);
 
         return $results;
     }
@@ -275,12 +261,6 @@ class MessageService
 
         $jobId = Queue::push($job);
 
-        Log::info('Message queued for sending', [
-            'job_id'  => $jobId,
-            'routing' => $routing,
-            'delay'   => $delay,
-        ]);
-
         return $jobId;
     }
 
@@ -322,13 +302,6 @@ class MessageService
 
         $jobId = Queue::push($job);
 
-        Log::info('Bulk messages queued for sending', [
-            'job_id'        => $jobId,
-            'message_count' => count($messages),
-            'batch_size'    => $batchSize,
-            'routing'       => $routing,
-        ]);
-
         return $jobId;
     }
 
@@ -352,11 +325,6 @@ class MessageService
             $routing['account_key'],
             $conversationData
         );
-
-        Log::info('Conversation created', [
-            'conversation_id' => $response['id'] ?? null,
-            'routing'         => $routing,
-        ]);
 
         return $response;
     }

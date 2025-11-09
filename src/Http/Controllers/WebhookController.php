@@ -6,7 +6,6 @@ use BassamShoukry\LaravelChatwoot\Services\WebhookHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
 {
@@ -23,13 +22,6 @@ class WebhookController extends Controller
     public function handle(Request $request): JsonResponse
     {
         try {
-            Log::info('Webhook received', [
-                'user_agent'   => $request->header('User-Agent'),
-                'content_type' => $request->header('Content-Type'),
-                'signature'    => $request->header('X-Chatwoot-Signature') ? 'present' : 'missing',
-                'payload_size' => strlen($request->getContent()),
-            ]);
-
             $result = $this->webhookHandler->handle($request);
 
             $statusCode = $result['success'] ? 200 : 400;
@@ -37,13 +29,6 @@ class WebhookController extends Controller
             return response()->json($result, $statusCode);
 
         } catch (\Exception $e) {
-            Log::error('Webhook controller error: ' . $e->getMessage(), [
-                'exception'      => $e->getMessage(),
-                'trace'          => $e->getTraceAsString(),
-                'request_method' => $request->getMethod(),
-                'request_url'    => $request->fullUrl(),
-            ]);
-
             return response()->json([
                 'success' => false,
                 'error'   => 'Internal server error',
@@ -83,8 +68,6 @@ class WebhookController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Webhook statistics error: ' . $e->getMessage());
-
             return response()->json([
                 'success' => false,
                 'error'   => $e->getMessage(),

@@ -5,7 +5,6 @@ namespace BassamShoukry\LaravelChatwoot\Services;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Log;
 
 class RateLimitService
 {
@@ -31,8 +30,6 @@ class RateLimitService
             if (isset($limits[$period])) {
                 $currentCount = $this->getCurrentCount($accountId, $inboxId, $period);
                 if ($currentCount >= $limits[$period]) {
-                    Log::warning("Rate limit exceeded for $accountId:$inboxId - $period: {$currentCount}/{$limits[$period]}");
-
                     return false;
                 }
             }
@@ -149,12 +146,9 @@ class RateLimitService
         }
 
         if ($delay > $maxWaitSeconds) {
-            Log::warning("Rate limit delay ($delay s) exceeds maximum wait time ($maxWaitSeconds s) for $accountId:$inboxId");
-
             return false;
         }
 
-        Log::info("Waiting $delay seconds for rate limit reset for $accountId:$inboxId");
         sleep($delay);
 
         return true;
@@ -171,8 +165,6 @@ class RateLimitService
             $key = $this->getCacheKey($accountId, $inboxId, $period);
             $cache->forget($key);
         }
-
-        Log::info("Rate limits reset for $accountId:$inboxId");
     }
 
     /**
@@ -298,19 +290,6 @@ class RateLimitService
             'per_day'    => $now->format('Y-m-d'),
             default      => $now->format('Y-m-d-H-i'),
         };
-    }
-
-    /**
-     * Log rate limit events.
-     */
-    protected function logRateLimit(string $accountId, string $inboxId, string $event, array $data = []): void
-    {
-        if ($this->config['logging']['enabled'] ?? true) {
-            Log::info("Rate limit event: $event", array_merge([
-                'account_id' => $accountId,
-                'inbox_id'   => $inboxId,
-            ], $data));
-        }
     }
 
     /**

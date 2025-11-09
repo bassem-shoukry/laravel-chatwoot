@@ -12,7 +12,6 @@ use BassamShoukry\LaravelChatwoot\Events\MessageUpdated;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
 class WebhookHandler
@@ -54,17 +53,8 @@ class WebhookHandler
                 throw new InvalidArgumentException('Missing event in webhook payload');
             }
 
-            Log::info('Processing webhook event', [
-                'event'           => $event,
-                'account'         => $payload['account']['id'] ?? null,
-                'conversation_id' => $payload['conversation']['id'] ?? null,
-                'message_id'      => $payload['message']['id'] ?? null,
-            ]);
-
             // Validate event type
             if (! in_array($event, $this->supportedEvents)) {
-                Log::warning('Unsupported webhook event received', ['event' => $event]);
-
                 return [
                     'success'          => false,
                     'error'            => "Unsupported event type: $event",
@@ -78,11 +68,6 @@ class WebhookHandler
             // Process the event
             $result = $this->processEvent($event, $payload);
 
-            Log::info('Webhook event processed successfully', [
-                'event'  => $event,
-                'result' => $result,
-            ]);
-
             return [
                 'success'      => true,
                 'event'        => $event,
@@ -91,12 +76,6 @@ class WebhookHandler
             ];
 
         } catch (\Exception $e) {
-            Log::error('Webhook processing failed: ' . $e->getMessage(), [
-                'exception'    => $e->getMessage(),
-                'trace'        => $e->getTraceAsString(),
-                'request_body' => $request->getContent(),
-            ]);
-
             return [
                 'success' => false,
                 'error'   => $e->getMessage(),
@@ -533,17 +512,8 @@ class WebhookHandler
                 ]
             );
 
-            Log::info('Auto-reply sent', [
-                'conversation_id' => $conversation['id'] ?? null,
-                'template'        => $autoReplyConfig['template'],
-                'result'          => $result,
-            ]);
-
         } catch (\Exception $e) {
-            Log::error('Auto-reply failed: ' . $e->getMessage(), [
-                'conversation_id' => $conversation['id'] ?? null,
-                'template'        => $autoReplyConfig['template'],
-            ]);
+            // Continue silently on auto-reply failure
         }
     }
 
