@@ -19,7 +19,6 @@ use BassamShoukry\LaravelChatwoot\Services\MessageService;
 use BassamShoukry\LaravelChatwoot\Services\RateLimitService;
 use BassamShoukry\LaravelChatwoot\Services\TemplateService;
 use BassamShoukry\LaravelChatwoot\Services\WebhookHandler;
-use Illuminate\Contracts\Foundation\Application;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 beforeEach(function () {
@@ -42,16 +41,16 @@ describe('LaravelChatwootServiceProvider', function () {
 
         it('can publish migrations', function () {
             // Test that migrations can be published without error
-            expect(fn() => artisan('vendor:publish', [
-                '--tag' => 'laravel-chatwoot-migrations',
+            expect(fn () => artisan('vendor:publish', [
+                '--tag'   => 'laravel-chatwoot-migrations',
                 '--force' => true,
             ]))->not()->toThrow(Exception::class);
         });
 
         it('can publish config', function () {
             // Test that config can be published without error
-            expect(fn() => artisan('vendor:publish', [
-                '--tag' => 'laravel-chatwoot-config',
+            expect(fn () => artisan('vendor:publish', [
+                '--tag'   => 'laravel-chatwoot-config',
                 '--force' => true,
             ]))->not()->toThrow(Exception::class);
         });
@@ -60,19 +59,19 @@ describe('LaravelChatwootServiceProvider', function () {
     describe('Service Registration', function () {
         it('registers AccountManager as singleton', function () {
             expect($this->app->bound(AccountManager::class))->toBeTrue();
-            
+
             $instance1 = $this->app->make(AccountManager::class);
             $instance2 = $this->app->make(AccountManager::class);
-            
+
             expect($instance1)->toBe($instance2);
         });
 
         it('registers ApiClient as singleton', function () {
             expect($this->app->bound(ApiClient::class))->toBeTrue();
-            
+
             $instance1 = $this->app->make(ApiClient::class);
             $instance2 = $this->app->make(ApiClient::class);
-            
+
             expect($instance1)->toBe($instance2);
         });
 
@@ -87,10 +86,10 @@ describe('LaravelChatwootServiceProvider', function () {
 
             foreach ($apiServices as $serviceClass) {
                 expect($this->app->bound($serviceClass))->toBeTrue();
-                
+
                 $instance1 = $this->app->make($serviceClass);
                 $instance2 = $this->app->make($serviceClass);
-                
+
                 expect($instance1)->toBe($instance2);
             }
         });
@@ -107,10 +106,10 @@ describe('LaravelChatwootServiceProvider', function () {
 
             foreach ($coreServices as $serviceClass) {
                 expect($this->app->bound($serviceClass))->toBeTrue();
-                
+
                 $instance1 = $this->app->make($serviceClass);
                 $instance2 = $this->app->make($serviceClass);
-                
+
                 expect($instance1)->toBe($instance2);
             }
         });
@@ -118,10 +117,10 @@ describe('LaravelChatwootServiceProvider', function () {
         it('registers main LaravelChatwoot service', function () {
             expect($this->app->bound('laravel-chatwoot'))->toBeTrue();
             expect($this->app->bound(LaravelChatwoot::class))->toBeTrue();
-            
+
             $instance1 = $this->app->make('laravel-chatwoot');
             $instance2 = $this->app->make('laravel-chatwoot');
-            
+
             expect($instance1)->toBe($instance2)
                 ->and($instance1)->toBeInstanceOf(LaravelChatwoot::class);
         });
@@ -131,19 +130,19 @@ describe('LaravelChatwootServiceProvider', function () {
         it('properly injects AccountManager into services', function () {
             $accountManager = $this->app->make(AccountManager::class);
             $apiClient = $this->app->make(ApiClient::class);
-            
+
             expect($apiClient)->toBeInstanceOf(ApiClient::class);
         });
 
         it('properly constructs MessageService with dependencies', function () {
             $messageService = $this->app->make(MessageService::class);
-            
+
             expect($messageService)->toBeInstanceOf(MessageService::class);
         });
 
         it('properly constructs main LaravelChatwoot with all dependencies', function () {
             $chatwoot = $this->app->make('laravel-chatwoot');
-            
+
             expect($chatwoot)->toBeInstanceOf(LaravelChatwoot::class);
         });
     });
@@ -159,29 +158,29 @@ describe('LaravelChatwootServiceProvider', function () {
 
         it('passes configuration to AccountManager', function () {
             $accountManager = $this->app->make(AccountManager::class);
-            
+
             expect($accountManager)->toBeInstanceOf(AccountManager::class);
         });
     });
 
     describe('Command Registration', function () {
         it('can create LaravelChatwootCommand', function () {
-            expect(fn() => $this->app->make(LaravelChatwootCommand::class))
+            expect(fn () => $this->app->make(LaravelChatwootCommand::class))
                 ->not()->toThrow(Exception::class);
         });
 
         it('can create TestConnectionCommand', function () {
-            expect(fn() => $this->app->make(TestConnectionCommand::class))
+            expect(fn () => $this->app->make(TestConnectionCommand::class))
                 ->not()->toThrow(Exception::class);
         });
 
         it('can create SendTemplateCommand', function () {
-            expect(fn() => $this->app->make(SendTemplateCommand::class))
+            expect(fn () => $this->app->make(SendTemplateCommand::class))
                 ->not()->toThrow(Exception::class);
         });
 
         it('can create SyncTemplatesCommand', function () {
-            expect(fn() => $this->app->make(SyncTemplatesCommand::class))
+            expect(fn () => $this->app->make(SyncTemplatesCommand::class))
                 ->not()->toThrow(Exception::class);
         });
     });
@@ -206,26 +205,26 @@ describe('LaravelChatwootServiceProvider', function () {
             ];
 
             foreach ($services as $service) {
-                expect(fn() => $this->app->make($service))->not()->toThrow(Exception::class);
+                expect(fn () => $this->app->make($service))->not()->toThrow(Exception::class);
             }
         });
 
         it('resolves services with correct types', function () {
             $serviceTypes = [
-                AccountManager::class => AccountManager::class,
-                ApiClient::class => ApiClient::class,
-                AccountsApi::class => AccountsApi::class,
-                ContactsApi::class => ContactsApi::class,
+                AccountManager::class   => AccountManager::class,
+                ApiClient::class        => ApiClient::class,
+                AccountsApi::class      => AccountsApi::class,
+                ContactsApi::class      => ContactsApi::class,
                 ConversationsApi::class => ConversationsApi::class,
-                InboxesApi::class => InboxesApi::class,
-                MessagesApi::class => MessagesApi::class,
-                InboxManager::class => InboxManager::class,
-                TemplateService::class => TemplateService::class,
-                MessageService::class => MessageService::class,
-                WebhookHandler::class => WebhookHandler::class,
+                InboxesApi::class       => InboxesApi::class,
+                MessagesApi::class      => MessagesApi::class,
+                InboxManager::class     => InboxManager::class,
+                TemplateService::class  => TemplateService::class,
+                MessageService::class   => MessageService::class,
+                WebhookHandler::class   => WebhookHandler::class,
                 RateLimitService::class => RateLimitService::class,
-                ChannelService::class => ChannelService::class,
-                'laravel-chatwoot' => LaravelChatwoot::class,
+                ChannelService::class   => ChannelService::class,
+                'laravel-chatwoot'      => LaravelChatwoot::class,
             ];
 
             foreach ($serviceTypes as $serviceKey => $expectedType) {

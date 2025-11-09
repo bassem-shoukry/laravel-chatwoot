@@ -9,7 +9,6 @@ use BassamShoukry\LaravelChatwoot\Events\ConversationStatusChanged;
 use BassamShoukry\LaravelChatwoot\Events\ConversationUpdated;
 use BassamShoukry\LaravelChatwoot\Events\MessageCreated;
 use BassamShoukry\LaravelChatwoot\Events\MessageUpdated;
-use BassamShoukry\LaravelChatwoot\Events\WebinarRegistrationAdded;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +27,6 @@ class WebhookHandler
         'message_updated',
         'contact_created',
         'contact_updated',
-        'webinar_registration_added',
     ];
 
     public function __construct(AccountManager $accountManager)
@@ -120,7 +118,6 @@ class WebhookHandler
             'message_updated'             => $this->handleMessageUpdated($payload),
             'contact_created'             => $this->handleContactCreated($payload),
             'contact_updated'             => $this->handleContactUpdated($payload),
-            'webinar_registration_added'  => $this->handleWebinarRegistrationAdded($payload),
             default                       => ['processed' => false, 'reason' => 'No handler for event type']
         };
 
@@ -283,17 +280,6 @@ class WebhookHandler
         ];
     }
 
-    /**
-     * Handle webinar registration added event.
-     */
-    protected function handleWebinarRegistrationAdded(array $payload): array
-    {
-        // Custom handling for webinar registrations
-        return [
-            'processed'         => true,
-            'registration_data' => $payload['registration'] ?? [],
-        ];
-    }
 
     /**
      * Verify webhook signature.
@@ -353,7 +339,6 @@ class WebhookHandler
             'message_updated'             => MessageUpdated::class,
             'contact_created'             => ContactCreated::class,
             'contact_updated'             => ContactUpdated::class,
-            'webinar_registration_added'  => WebinarRegistrationAdded::class,
             default                       => null
         };
 

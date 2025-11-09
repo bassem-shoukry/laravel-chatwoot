@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * @throws RuntimeException
+     */
     public function up(): void
     {
         Schema::create('chatwoot_accounts', function (Blueprint $table) {
@@ -19,11 +22,14 @@ return new class extends Migration
             $table->timestamp('token_expires_at')->nullable();
             $table->timestamp('last_verified_at')->nullable();
             $table->timestamps();
-            
+
             $table->index(['account_key', 'is_active']);
         });
     }
 
+    /**
+     * @throws RuntimeException
+     */
     public function down(): void
     {
         Schema::dropIfExists('chatwoot_accounts');

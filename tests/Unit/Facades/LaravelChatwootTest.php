@@ -14,65 +14,65 @@ describe('LaravelChatwoot Facade', function () {
         $method = $reflection->getMethod('getFacadeAccessor');
         $method->setAccessible(true);
         $accessor = $method->invoke(new LaravelChatwoot);
-        
+
         expect($accessor)->toBe('laravel-chatwoot');
     });
 
     it('can access facade methods', function () {
         // Mock the underlying service
         $mockService = Mockery::mock(LaravelChatwootService::class);
-        
+
         $mockService->shouldReceive('account')
             ->with('primary')
             ->once()
             ->andReturnSelf();
-            
+
         $this->app->instance(LaravelChatwootService::class, $mockService);
-        
+
         $result = LaravelChatwoot::account('primary');
-        
+
         expect($result)->toBe($mockService);
     });
 
     it('can chain facade method calls', function () {
         $mockService = Mockery::mock(LaravelChatwootService::class);
-        
+
         $mockService->shouldReceive('account')
             ->with('primary')
             ->once()
             ->andReturnSelf();
-            
+
         $mockService->shouldReceive('inbox')
             ->with('support')
             ->once()
             ->andReturnSelf();
-            
+
         $mockService->shouldReceive('sendMessage')
             ->with(['content' => 'test'])
             ->once()
             ->andReturn(['id' => 123]);
-            
+
         $this->app->instance(LaravelChatwootService::class, $mockService);
-        
+
         $result = LaravelChatwoot::account('primary')
             ->inbox('support')
             ->sendMessage(['content' => 'test']);
-        
+
         expect($result)->toBe(['id' => 123]);
     });
 
     it('can call static factory method through facade', function () {
         $mockService = Mockery::mock(LaravelChatwootService::class);
-        
+
         $mockService->shouldReceive('for')
             ->with('primary', 'support')
             ->once()
             ->andReturn($mockService);
-        
+
         $this->app->instance('laravel-chatwoot', $mockService);
-        
+
         $result = LaravelChatwoot::for('primary', 'support');
-        
+
         expect($result)->toBe($mockService);
     });
 
@@ -89,7 +89,7 @@ describe('LaravelChatwoot Facade', function () {
                 ->andReturnSelf();
 
             $result = LaravelChatwoot::account('test-account');
-            
+
             expect($result)->toBe($this->mockService);
         });
 
@@ -100,7 +100,7 @@ describe('LaravelChatwoot Facade', function () {
                 ->andReturnSelf();
 
             $result = LaravelChatwoot::inbox('test-inbox');
-            
+
             expect($result)->toBe($this->mockService);
         });
 
@@ -114,7 +114,7 @@ describe('LaravelChatwoot Facade', function () {
                 ->andReturn($expectedResult);
 
             $result = LaravelChatwoot::sendMessage($messageData);
-            
+
             expect($result)->toBe($expectedResult);
         });
 
@@ -130,7 +130,7 @@ describe('LaravelChatwoot Facade', function () {
                 ->andReturn($expectedResult);
 
             $result = LaravelChatwoot::sendTemplate($templateKey, $variables, $options);
-            
+
             expect($result)->toBe($expectedResult);
         });
 
@@ -144,7 +144,7 @@ describe('LaravelChatwoot Facade', function () {
                 ->andReturn($expectedResult);
 
             $result = LaravelChatwoot::sendBulkMessages($messages);
-            
+
             expect($result)->toBe($expectedResult);
         });
 
@@ -159,7 +159,7 @@ describe('LaravelChatwoot Facade', function () {
                 ->andReturn($expectedJobId);
 
             $result = LaravelChatwoot::queueMessage($messageData, $delay);
-            
+
             expect($result)->toBe($expectedJobId);
         });
 
@@ -172,7 +172,7 @@ describe('LaravelChatwoot Facade', function () {
                 ->andReturn($expectedResult);
 
             $result = LaravelChatwoot::testConnection('primary');
-            
+
             expect($result)->toBe($expectedResult);
         });
 
@@ -185,7 +185,7 @@ describe('LaravelChatwoot Facade', function () {
                 ->andReturn($expectedAccount);
 
             $result = LaravelChatwoot::getCurrentAccount();
-            
+
             expect($result)->toBe($expectedAccount);
         });
 
@@ -198,13 +198,13 @@ describe('LaravelChatwoot Facade', function () {
                 ->andReturn($expectedInbox);
 
             $result = LaravelChatwoot::getCurrentInbox();
-            
+
             expect($result)->toBe($expectedInbox);
         });
 
         it('provides getTemplates method', function () {
             $expectedTemplates = [
-                ['key' => 'welcome', 'name' => 'Welcome Message']
+                ['key' => 'welcome', 'name' => 'Welcome Message'],
             ];
 
             $this->mockService->shouldReceive('getTemplates')
@@ -213,7 +213,7 @@ describe('LaravelChatwoot Facade', function () {
                 ->andReturn($expectedTemplates);
 
             $result = LaravelChatwoot::getTemplates('primary', 'support');
-            
+
             expect($result)->toBe($expectedTemplates);
         });
 
@@ -224,7 +224,7 @@ describe('LaravelChatwoot Facade', function () {
                 ->andReturn(true);
 
             $result = LaravelChatwoot::checkRateLimit('primary', 'support');
-            
+
             expect($result)->toBeTrue();
         });
 
@@ -240,7 +240,7 @@ describe('LaravelChatwoot Facade', function () {
                 ->andReturn($expectedResult);
 
             $result = LaravelChatwoot::send($content, $contactData, $options);
-            
+
             expect($result)->toBe($expectedResult);
         });
 
@@ -257,7 +257,7 @@ describe('LaravelChatwoot Facade', function () {
                 ->andReturn($expectedResult);
 
             $result = LaravelChatwoot::template($templateKey, $variables, $contactData, $options);
-            
+
             expect($result)->toBe($expectedResult);
         });
     });

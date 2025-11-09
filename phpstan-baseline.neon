@@ -73,12 +73,6 @@ parameters:
 			path: src/Commands/SyncTemplatesCommand.php
 
 		-
-			message: '#^Possibly invalid array key type array\|string\|true\.$#'
-			identifier: array.invalidKey
-			count: 1
-			path: src/Commands/SyncTemplatesCommand.php
-
-		-
 			message: '#^Method BassamShoukry\\LaravelChatwoot\\Commands\\TestConnectionCommand\:\:displaySummaryTable\(\) has parameter \$results with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -99,12 +93,6 @@ parameters:
 		-
 			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\AccountManager\:\:testConnection\(\) invoked with 0 parameters, 1 required\.$#'
 			identifier: arguments.count
-			count: 1
-			path: src/Commands/TestConnectionCommand.php
-
-		-
-			message: '#^Possibly invalid array key type array\|string\|true\.$#'
-			identifier: array.invalidKey
 			count: 1
 			path: src/Commands/TestConnectionCommand.php
 
@@ -415,51 +403,6 @@ parameters:
 			path: src/Events/MessageUpdated.php
 
 		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Events\\WebinarRegistrationAdded\:\:__construct\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Events/WebinarRegistrationAdded.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Events\\WebinarRegistrationAdded\:\:broadcastOn\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Events/WebinarRegistrationAdded.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Events\\WebinarRegistrationAdded\:\:broadcastWith\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Events/WebinarRegistrationAdded.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Events\\WebinarRegistrationAdded\:\:getRegistrationData\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Events/WebinarRegistrationAdded.php
-
-		-
-			message: '#^Property BassamShoukry\\LaravelChatwoot\\Events\\WebinarRegistrationAdded\:\:\$account type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Events/WebinarRegistrationAdded.php
-
-		-
-			message: '#^Property BassamShoukry\\LaravelChatwoot\\Events\\WebinarRegistrationAdded\:\:\$contact type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Events/WebinarRegistrationAdded.php
-
-		-
-			message: '#^Property BassamShoukry\\LaravelChatwoot\\Events\\WebinarRegistrationAdded\:\:\$registration type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Events/WebinarRegistrationAdded.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Exceptions\\ChatwootApiException\:\:__construct\(\) has parameter \$responseData with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
 			path: src/Exceptions/ChatwootApiException.php
 
 		-
@@ -1041,12 +984,6 @@ parameters:
 		-
 			message: '#^Method BassamShoukry\\LaravelChatwoot\\LaravelChatwoot\:\:validateTemplate\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: src/LaravelChatwoot.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\AccountManager\:\:testConnection\(\) invoked with 0 parameters, 1 required\.$#'
-			identifier: arguments.count
 			count: 1
 			path: src/LaravelChatwoot.php
 
@@ -3476,18 +3413,6 @@ parameters:
 
 		-
 			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\WebhookHandler\:\:handleMessageUpdated\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Services/WebhookHandler.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\WebhookHandler\:\:handleWebinarRegistrationAdded\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Services/WebhookHandler.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\WebhookHandler\:\:handleWebinarRegistrationAdded\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Services/WebhookHandler.php

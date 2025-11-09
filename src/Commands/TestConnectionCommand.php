@@ -12,7 +12,7 @@ class TestConnectionCommand extends Command
     public $signature = 'chatwoot:test-connection 
                         {account? : Account key to test (optional, will test all if not provided)}
                         {--timeout=30 : Connection timeout in seconds}
-                        {--verbose : Show detailed connection information}';
+                        {--detailed : Show detailed connection information}';
     public $description = 'Test connections to configured Chatwoot accounts and inboxes';
     protected AccountManager $accountManager;
     protected InboxManager $inboxManager;
@@ -72,7 +72,7 @@ class TestConnectionCommand extends Command
                 if ($connectionResult['success']) {
                     $this->info('  ✅ Account connection successful');
 
-                    if ($this->option('verbose')) {
+                    if ($this->option('detailed')) {
                         $this->info('     URL: ' . ($accountConfig['url'] ?? 'N/A'));
                         $this->info('     Response time: ' . $accountResult['response_time']);
                     }
@@ -92,7 +92,7 @@ class TestConnectionCommand extends Command
                                 if ($inboxResult['success']) {
                                     $this->info("    ✅ Inbox '$inboxKey' connection successful");
 
-                                    if ($this->option('verbose')) {
+                                    if ($this->option('detailed')) {
                                         $this->info('       Channels: ' . implode(', ', $inboxConfig['channels'] ?? []));
                                     }
                                 } else {

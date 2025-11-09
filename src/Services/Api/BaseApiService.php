@@ -198,4 +198,51 @@ abstract class BaseApiService
     {
         return array_intersect_key($data, array_flip($allowedFields));
     }
+
+    /**
+     * Get paginated results from an endpoint.
+     */
+    protected function paginate(string $endpoint, int $page = 1, int $perPage = 25, array $additionalParams = []): array
+    {
+        $params = array_merge($additionalParams, [
+            'page'     => $page,
+            'per_page' => min($perPage, 100), // Limit to reasonable page size
+        ]);
+
+        return $this->makeRequest('GET', $endpoint, [], $params);
+    }
+
+    /**
+     * Fetch all results from a paginated endpoint automatically.
+     *
+     * @param string $endpoint API endpoint to fetch from
+     * @param array $params Additional query parameters
+     * @param int $perPage Number of items per page (max 100)
+     * @param int $maxPages Safety limit for maximum pages (default 100)
+     * @param string $payloadKey Key in response containing the items (default 'payload')
+     * @return array All fetched items
+     */
+    protected function fetchAll(
+        string $endpoint,
+        array $params = [],
+        int $perPage = 100,
+        int $maxPages = 100,
+        string $payloadKey = 'payload'
+    ): array {
+        $allItems = [];
+        $page = 1;
+
+        do {
+            $response = $this->paginate($endpoint, $page, $perPage, $params);
+            $items = $response[$payloadKey] ?? [];
+
+            $allItems = array_merge($allItems, $items);
+
+            $hasMore = count($items) === $perPage;
+            $page++;
+
+        } while ($hasMore && $page <= $maxPages);
+
+        return $allItems;
+    }
 }

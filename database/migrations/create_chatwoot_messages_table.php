@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * @throws RuntimeException
+     */
     public function up(): void
     {
         Schema::create('chatwoot_messages', function (Blueprint $table) {
@@ -25,7 +28,7 @@ return new class extends Migration
             $table->timestamp('sent_at')->nullable();
             $table->timestamp('delivered_at')->nullable();
             $table->timestamps();
-            
+
             $table->index(['account_key', 'inbox_key', 'status']);
             $table->index(['conversation_id', 'created_at']);
             $table->index(['status', 'retry_count']);
@@ -33,6 +36,9 @@ return new class extends Migration
         });
     }
 
+    /**
+     * @throws RuntimeException
+     */
     public function down(): void
     {
         Schema::dropIfExists('chatwoot_messages');

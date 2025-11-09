@@ -15,7 +15,7 @@ beforeEach(function () {
     $this->templateServiceMock = Mockery::mock(TemplateService::class);
     $this->rateLimitServiceMock = Mockery::mock(RateLimitService::class);
     $this->webhookHandlerMock = Mockery::mock(WebhookHandler::class);
-    
+
     $this->chatwoot = new LaravelChatwoot(
         $this->accountManagerMock,
         $this->inboxManagerMock,
@@ -39,8 +39,8 @@ describe('LaravelChatwoot Class', function () {
         $this->app->instance(RateLimitService::class, $this->rateLimitServiceMock);
         $this->app->instance(WebhookHandler::class, $this->webhookHandlerMock);
 
-        $chatwoot = new LaravelChatwoot();
-        
+        $chatwoot = new LaravelChatwoot;
+
         expect($chatwoot)->toBeInstanceOf(LaravelChatwoot::class);
     });
 
@@ -58,7 +58,7 @@ describe('LaravelChatwoot Class', function () {
 
         it('can get current account information', function () {
             $expectedAccount = ['id' => 1, 'name' => 'Test Account'];
-            
+
             $this->accountManagerMock
                 ->shouldReceive('getCurrentAccountInfo')
                 ->once()
@@ -71,12 +71,12 @@ describe('LaravelChatwoot Class', function () {
 
         it('can test connection to Chatwoot API', function () {
             $expectedResult = ['status' => 'connected', 'account_id' => 1];
-            
+
             $this->accountManagerMock
                 ->shouldReceive('getCurrentAccount')
                 ->once()
                 ->andReturn('primary');
-            
+
             $this->accountManagerMock
                 ->shouldReceive('testConnection')
                 ->with('primary')
@@ -90,12 +90,12 @@ describe('LaravelChatwoot Class', function () {
 
         it('can test connection with specific account', function () {
             $expectedResult = ['status' => 'connected', 'account_id' => 2];
-            
+
             $this->accountManagerMock
                 ->shouldReceive('account')
                 ->with('secondary')
                 ->once();
-            
+
             $this->accountManagerMock
                 ->shouldReceive('testConnection')
                 ->with('secondary')
@@ -122,7 +122,7 @@ describe('LaravelChatwoot Class', function () {
 
         it('can get current inbox information', function () {
             $expectedInbox = ['id' => 1, 'name' => 'Support Inbox'];
-            
+
             $this->inboxManagerMock
                 ->shouldReceive('getCurrentInboxInfo')
                 ->once()
@@ -135,7 +135,7 @@ describe('LaravelChatwoot Class', function () {
 
         it('can get routing information', function () {
             $expectedRouting = ['account_key' => 'primary', 'inbox_key' => 'support'];
-            
+
             $this->inboxManagerMock
                 ->shouldReceive('getRoutingInfo')
                 ->once()
@@ -151,7 +151,7 @@ describe('LaravelChatwoot Class', function () {
         it('can send a direct message', function () {
             $messageData = [
                 'content' => 'Hello World',
-                'contact' => ['phone_number' => '+1234567890']
+                'contact' => ['phone_number' => '+1234567890'],
             ];
             $expectedResult = ['id' => 123, 'status' => 'sent'];
 
@@ -186,7 +186,7 @@ describe('LaravelChatwoot Class', function () {
         it('can send bulk messages', function () {
             $messages = [
                 ['content' => 'Message 1', 'contact' => ['phone' => '+1111111111']],
-                ['content' => 'Message 2', 'contact' => ['phone' => '+2222222222']]
+                ['content' => 'Message 2', 'contact' => ['phone' => '+2222222222']],
             ];
             $expectedResult = ['sent' => 2, 'failed' => 0];
 
@@ -285,7 +285,7 @@ describe('LaravelChatwoot Class', function () {
             $conversationId = 789;
             $expectedResult = [
                 ['id' => 1, 'content' => 'Hello'],
-                ['id' => 2, 'content' => 'How can I help?']
+                ['id' => 2, 'content' => 'How can I help?'],
             ];
 
             $this->messageServiceMock
@@ -323,7 +323,7 @@ describe('LaravelChatwoot Class', function () {
             $inboxKey = 'support';
             $expectedResult = [
                 ['key' => 'welcome', 'name' => 'Welcome Message'],
-                ['key' => 'follow_up', 'name' => 'Follow Up']
+                ['key' => 'follow_up', 'name' => 'Follow Up'],
             ];
 
             $this->templateServiceMock
@@ -342,9 +342,9 @@ describe('LaravelChatwoot Class', function () {
             $accountKey = 'primary';
             $inboxKey = 'support';
             $expectedResult = [
-                'key' => 'welcome',
-                'content' => 'Welcome {{name}}!',
-                'variables' => ['name']
+                'key'       => 'welcome',
+                'content'   => 'Welcome {{name}}!',
+                'variables' => ['name'],
             ];
 
             $this->templateServiceMock
@@ -365,7 +365,7 @@ describe('LaravelChatwoot Class', function () {
             $inboxKey = 'support';
             $expectedResult = [
                 'processed_content' => 'Welcome John!',
-                'character_count' => 13
+                'character_count'   => 13,
             ];
 
             $this->templateServiceMock
@@ -385,9 +385,9 @@ describe('LaravelChatwoot Class', function () {
             $accountKey = 'primary';
             $inboxKey = 'support';
             $expectedResult = [
-                'valid' => true,
+                'valid'             => true,
                 'missing_variables' => [],
-                'extra_variables' => []
+                'extra_variables'   => [],
             ];
 
             $this->templateServiceMock
@@ -448,9 +448,9 @@ describe('LaravelChatwoot Class', function () {
             $inboxKey = 'support';
             $routingInfo = ['account_key' => $accountKey, 'inbox_key' => $inboxKey];
             $expectedResult = [
-                'limit' => 60,
+                'limit'     => 60,
                 'remaining' => 45,
-                'reset_at' => '2024-01-01 12:00:00'
+                'reset_at'  => '2024-01-01 12:00:00',
             ];
 
             $this->inboxManagerMock
@@ -475,9 +475,9 @@ describe('LaravelChatwoot Class', function () {
             $accountId = 'primary';
             $days = 7;
             $expectedResult = [
-                'received' => 150,
+                'received'  => 150,
                 'processed' => 148,
-                'failed' => 2
+                'failed'    => 2,
             ];
 
             $this->webhookHandlerMock
@@ -541,9 +541,9 @@ describe('LaravelChatwoot Class', function () {
             $contactData = ['phone' => '+1234567890'];
             $options = ['priority' => 'high'];
             $expectedMessage = [
-                'content' => $content,
-                'contact' => $contactData,
-                'priority' => 'high'
+                'content'  => $content,
+                'contact'  => $contactData,
+                'priority' => 'high',
             ];
             $expectedResult = ['id' => 125, 'status' => 'sent'];
 
@@ -564,8 +564,8 @@ describe('LaravelChatwoot Class', function () {
             $contactData = ['email' => 'john@example.com'];
             $options = ['priority' => 'normal'];
             $expectedOptions = [
-                'contact' => $contactData,
-                'priority' => 'normal'
+                'contact'  => $contactData,
+                'priority' => 'normal',
             ];
             $expectedResult = ['id' => 126, 'status' => 'sent'];
 

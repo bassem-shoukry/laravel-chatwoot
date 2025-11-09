@@ -16,6 +16,28 @@ class ConversationsApi extends BaseApiService
     }
 
     /**
+     * Get paginated conversations with filtering.
+     */
+    public function getPaginated(int $page = 1, int $perPage = 25, array $filters = []): array
+    {
+        $account = $this->getCurrentAccount();
+        $endpoint = "accounts/{$account['account_key']}/conversations";
+
+        return $this->paginate($endpoint, $page, $perPage, $filters);
+    }
+
+    /**
+     * Get all conversations (handles pagination automatically).
+     */
+    public function getAll(array $filters = []): array
+    {
+        $account = $this->getCurrentAccount();
+        $endpoint = "accounts/{$account['account_key']}/conversations";
+
+        return $this->fetchAll($endpoint, $filters);
+    }
+
+    /**
      * Get a specific conversation.
      */
     public function get(int $conversationId): array

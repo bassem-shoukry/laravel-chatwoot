@@ -70,7 +70,7 @@ expect()->extend('toBeBound', function () {
 */
 
 /**
- * Helper function to create a mock Chatwoot service
+ * Helper function to create a mock Chatwoot service.
  */
 function mockChatwootService(): Mockery\MockInterface
 {
@@ -78,27 +78,27 @@ function mockChatwootService(): Mockery\MockInterface
 }
 
 /**
- * Helper function to get a test configuration array
+ * Helper function to get a test configuration array.
  */
 function getTestConfig(): array
 {
     return [
         'default_account' => 'test',
-        'accounts' => [
+        'accounts'        => [
             'test' => [
-                'url' => 'https://test.chatwoot.com',
-                'token' => 'test-token',
+                'url'           => 'https://test.chatwoot.com',
+                'token'         => 'test-token',
                 'default_inbox' => 'test-inbox',
-                'inboxes' => [
+                'inboxes'       => [
                     'test-inbox' => [
-                        'id' => 1,
-                        'name' => 'Test Inbox',
-                        'channels' => ['email'],
-                        'templates' => ['test-template'],
+                        'id'          => 1,
+                        'name'        => 'Test Inbox',
+                        'channels'    => ['email'],
+                        'templates'   => ['test-template'],
                         'rate_limits' => [
                             'per_minute' => 10,
-                            'per_hour' => 100,
-                            'per_day' => 1000,
+                            'per_hour'   => 100,
+                            'per_day'    => 1000,
                         ],
                     ],
                 ],
@@ -108,15 +108,15 @@ function getTestConfig(): array
 }
 
 /**
- * Helper function to create test message data
+ * Helper function to create test message data.
  */
 function getTestMessageData(): array
 {
     return [
         'content' => 'Test message content',
         'contact' => [
-            'name' => 'Test Contact',
-            'email' => 'test@example.com',
+            'name'         => 'Test Contact',
+            'email'        => 'test@example.com',
             'phone_number' => '+1234567890',
         ],
         'priority' => 'normal',
@@ -124,15 +124,15 @@ function getTestMessageData(): array
 }
 
 /**
- * Helper function to create test template data
+ * Helper function to create test template data.
  */
 function getTestTemplateData(): array
 {
     return [
-        'key' => 'test-template',
-        'name' => 'Test Template',
-        'content' => 'Hello {{name}}, welcome to our service!',
-        'variables' => ['name'],
+        'key'                  => 'test-template',
+        'name'                 => 'Test Template',
+        'content'              => 'Hello {{name}}, welcome to our service!',
+        'variables'            => ['name'],
         'channel_restrictions' => ['email', 'sms'],
     ];
 }

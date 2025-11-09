@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * @throws RuntimeException
+     */
     public function up(): void
     {
         Schema::create('chatwoot_webhook_events', function (Blueprint $table) {
@@ -18,7 +21,7 @@ return new class extends Migration
             $table->boolean('processed')->default(false);
             $table->text('processing_error')->nullable();
             $table->timestamps();
-            
+
             $table->index(['account_key', 'event_type', 'processed']);
             $table->index(['created_at', 'processed']);
             $table->index(['verified', 'processed']);
@@ -26,6 +29,9 @@ return new class extends Migration
         });
     }
 
+    /**
+     * @throws RuntimeException
+     */
     public function down(): void
     {
         Schema::dropIfExists('chatwoot_webhook_events');

@@ -187,12 +187,10 @@ class ContactsApi extends BaseApiService
      */
     public function getPaginated(int $page = 1, int $perPage = 25, array $filters = []): array
     {
-        $params = array_merge($filters, [
-            'page'     => $page,
-            'per_page' => min($perPage, 100), // Limit to reasonable page size
-        ]);
+        $account = $this->getCurrentAccount();
+        $endpoint = "accounts/{$account['account_key']}/contacts";
 
-        return $this->list($params);
+        return $this->paginate($endpoint, $page, $perPage, $filters);
     }
 
     /**
@@ -200,22 +198,10 @@ class ContactsApi extends BaseApiService
      */
     public function getAll(array $filters = []): array
     {
-        $allContacts = [];
-        $page = 1;
-        $perPage = 100;
+        $account = $this->getCurrentAccount();
+        $endpoint = "accounts/{$account['account_key']}/contacts";
 
-        do {
-            $response = $this->getPaginated($page, $perPage, $filters);
-            $contacts = $response['payload'] ?? [];
-
-            $allContacts = array_merge($allContacts, $contacts);
-
-            $hasMore = count($contacts) === $perPage;
-            $page++;
-
-        } while ($hasMore && $page <= 100); // Safety limit
-
-        return $allContacts;
+        return $this->fetchAll($endpoint, $filters);
     }
 
     /**

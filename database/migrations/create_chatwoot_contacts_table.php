@@ -6,7 +6,10 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    /**
+     * @throws RuntimeException
+     */
+    public function up(): void
     {
         Schema::create('chatwoot_contacts', function (Blueprint $table) {
             $table->id();
@@ -23,7 +26,7 @@ return new class extends Migration
 
             // Unique constraint to prevent duplicates
             $table->unique(['account_id', 'contact_id'], 'unique_account_contact');
-            
+
             // Additional indexes for common lookups
             $table->index(['account_id', 'email'], 'account_email_idx');
             $table->index(['account_id', 'phone_number'], 'account_phone_idx');
@@ -31,7 +34,10 @@ return new class extends Migration
         });
     }
 
-    public function down()
+    /**
+     * @throws RuntimeException
+     */
+    public function down(): void
     {
         Schema::dropIfExists('chatwoot_contacts');
     }
