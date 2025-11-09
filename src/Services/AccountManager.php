@@ -128,8 +128,8 @@ class AccountManager
 
             return [
                 'account_key' => $currentAccount,
-                'url' => $url,
-                'token' => $token,
+                'url'         => $url,
+                'token'       => $token,
             ];
         } catch (AccountNotFoundException $e) {
             return null;

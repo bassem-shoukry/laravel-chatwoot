@@ -164,10 +164,10 @@ class InboxManager
             $inboxConfig = $this->getInboxConfig($currentInbox);
 
             return [
-                'inbox_key' => $currentInbox,
-                'inbox_id' => $inboxConfig['id'] ?? null,
+                'inbox_key'   => $currentInbox,
+                'inbox_id'    => $inboxConfig['id'] ?? null,
                 'account_key' => $currentAccount,
-                'inbox_name' => $inboxConfig['name'] ?? $currentInbox,
+                'inbox_name'  => $inboxConfig['name'] ?? $currentInbox,
             ];
         } catch (\Exception $e) {
             return null;

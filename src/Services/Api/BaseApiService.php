@@ -182,11 +182,12 @@ abstract class BaseApiService
     /**
      * Fetch all results from a paginated endpoint automatically.
      *
-     * @param string $endpoint API endpoint to fetch from
-     * @param array $params Additional query parameters
-     * @param int $perPage Number of items per page (max 100)
-     * @param int $maxPages Safety limit for maximum pages (default 100)
+     * @param string $endpoint   API endpoint to fetch from
+     * @param array  $params     Additional query parameters
+     * @param int    $perPage    Number of items per page (max 100)
+     * @param int    $maxPages   Safety limit for maximum pages (default 100)
      * @param string $payloadKey Key in response containing the items (default 'payload')
+     *
      * @return array All fetched items
      */
     protected function fetchAll(

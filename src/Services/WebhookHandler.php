@@ -259,7 +259,6 @@ class WebhookHandler
         ];
     }
 
-
     /**
      * Verify webhook signature.
      */

@@ -155,14 +155,14 @@ return [
     |
     */
     'webhooks' => [
-        'enabled'            => env('CHATWOOT_WEBHOOKS_ENABLED', true),
-        'verify_signature'   => env('CHATWOOT_VERIFY_SIGNATURE', false),
-        'secret'             => env('CHATWOOT_WEBHOOK_SECRET'),
-        'fire_events'        => true,
+        'enabled'             => env('CHATWOOT_WEBHOOKS_ENABLED', true),
+        'verify_signature'    => env('CHATWOOT_VERIFY_SIGNATURE', false),
+        'secret'              => env('CHATWOOT_WEBHOOK_SECRET'),
+        'fire_events'         => true,
         'track_conversations' => true,
-        'track_messages'     => true,
-        'track_contacts'     => true,
-        'auto_reply'         => [
+        'track_messages'      => true,
+        'track_contacts'      => true,
+        'auto_reply'          => [
             'enabled' => false,
         ],
     ],
@@ -208,7 +208,7 @@ return [
     |
     */
     'cache' => [
-        'store' => env('CHATWOOT_CACHE_STORE', 'default'),
+        'store'           => env('CHATWOOT_CACHE_STORE', 'default'),
         'account_configs' => [
             'prefix' => env('CHATWOOT_CACHE_PREFIX', 'chatwoot_accounts'),
             'ttl'    => env('CHATWOOT_CACHE_TTL', 3600), // seconds
