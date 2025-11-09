@@ -148,6 +148,35 @@ class InboxManager
     }
 
     /**
+     * Get current inbox information including configuration details.
+     *
+     * @return array{inbox_key: string, inbox_id: string|null, account_key: string}|null
+     */
+    public function getCurrentInboxInfo(): ?array
+    {
+        try {
+            $currentAccount = $this->accountManager->getCurrentAccount();
+            $currentInbox = $this->getCurrentInbox();
+
+            if (! $currentAccount || ! $currentInbox) {
+                return null;
+            }
+
+            $inboxConfig = $this->getInboxConfig($currentInbox);
+
+            return [
+                'inbox_key' => $currentInbox,
+                'inbox_id' => $inboxConfig['id'] ?? null,
+                'account_key' => $currentAccount,
+                'inbox_name' => $inboxConfig['name'] ?? $currentInbox,
+            ];
+        } catch (\Exception $e) {
+            Log::warning('Failed to get current inbox info: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Get available channels for the current inbox.
      */
     public function getAvailableChannels(): array

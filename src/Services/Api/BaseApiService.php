@@ -91,7 +91,8 @@ abstract class BaseApiService
                     throw new ChatwootApiException(
                         "API request failed with status $statusCode: $errorMessage",
                         $statusCode,
-                        $errorData
+                        $statusCode,
+                        $errorData ?? []
                     );
                 }
 
@@ -99,7 +100,8 @@ abstract class BaseApiService
                 $lastException = new ChatwootApiException(
                     "API request failed with status $statusCode: $errorMessage",
                     $statusCode,
-                    $errorData
+                    $statusCode,
+                    $errorData ?? []
                 );
 
                 if ($attempt < $retryAttempts) {
@@ -121,7 +123,8 @@ abstract class BaseApiService
                 $lastException = new ChatwootApiException(
                     'Network error: ' . $e->getMessage(),
                     0,
-                    null,
+                    0,
+                    [],
                     $e
                 );
 

@@ -201,6 +201,34 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Cache Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Settings for caching account configurations, validations, and API responses.
+    |
+    */
+    'cache' => [
+        'store' => env('CHATWOOT_CACHE_STORE', 'default'),
+        'account_configs' => [
+            'prefix' => env('CHATWOOT_CACHE_PREFIX', 'chatwoot_accounts'),
+            'ttl'    => env('CHATWOOT_CACHE_TTL', 3600), // seconds
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Security Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Security-related settings for the package.
+    |
+    */
+    'security' => [
+        'encrypt_tokens' => env('CHATWOOT_ENCRYPT_TOKENS', true),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Template Configuration
     |--------------------------------------------------------------------------
     |

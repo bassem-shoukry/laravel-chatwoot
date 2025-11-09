@@ -106,6 +106,40 @@ class AccountManager
     }
 
     /**
+     * Get current account information including URL and token.
+     *
+     * @return array{account_key: string, url: string, token: string}|null
+     */
+    public function getCurrentAccountInfo(): ?array
+    {
+        $currentAccount = $this->getCurrentAccount();
+
+        if (! $currentAccount) {
+            return null;
+        }
+
+        try {
+            $config = $this->getAccountConfig($currentAccount);
+            $token = $this->getAccountToken($currentAccount);
+            $url = $this->getAccountUrl($currentAccount);
+
+            if (! $token || ! $url) {
+                Log::warning("Incomplete account info for account: $currentAccount");
+                return null;
+            }
+
+            return [
+                'account_key' => $currentAccount,
+                'url' => $url,
+                'token' => $token,
+            ];
+        } catch (AccountNotFoundException $e) {
+            Log::warning("Current account not found: $currentAccount - " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Get configuration for a specific account.
      */
     public function getAccountConfig(string $accountId): array

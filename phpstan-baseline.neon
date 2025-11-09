@@ -3,98 +3,8 @@ parameters:
 		-
 			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
 			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 56
+			count: 33
 			path: config/chatwoot.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Commands\\LaravelChatwootCommand\:\:showPackageStatus\(\) throws checked exception RuntimeException but it''s missing from the PHPDoc @throws tag\.$#'
-			identifier: missingType.checkedException
-			count: 1
-			path: src/Commands/LaravelChatwootCommand.php
-
-		-
-			message: '#^Call to an undefined method BassamShoukry\\LaravelChatwoot\\Services\\TemplateService\:\:getAvailableTemplates\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: src/Commands/SyncTemplatesCommand.php
-
-		-
-			message: '#^Call to an undefined method BassamShoukry\\LaravelChatwoot\\Services\\TemplateService\:\:templateExists\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: src/Commands/SyncTemplatesCommand.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Commands\\SyncTemplatesCommand\:\:displayResultTable\(\) has parameter \$results with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Commands/SyncTemplatesCommand.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Commands\\SyncTemplatesCommand\:\:displayResults\(\) has parameter \$results with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Commands/SyncTemplatesCommand.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Commands\\SyncTemplatesCommand\:\:getApiTemplates\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Commands/SyncTemplatesCommand.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Commands\\SyncTemplatesCommand\:\:getDatabaseTemplates\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Commands/SyncTemplatesCommand.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Commands\\SyncTemplatesCommand\:\:getFileTemplates\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Commands/SyncTemplatesCommand.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Commands\\SyncTemplatesCommand\:\:syncAccountTemplates\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Commands/SyncTemplatesCommand.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\TemplateService\:\:storeTemplate\(\) invoked with 3 parameters, 1 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: src/Commands/SyncTemplatesCommand.php
-
-		-
-			message: '#^Parameter \#1 \$templateData of method BassamShoukry\\LaravelChatwoot\\Services\\TemplateService\:\:storeTemplate\(\) expects array, \(int\|string\) given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Commands/SyncTemplatesCommand.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Commands\\TestConnectionCommand\:\:displaySummaryTable\(\) has parameter \$results with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Commands/TestConnectionCommand.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Commands\\TestConnectionCommand\:\:testInboxConnection\(\) has parameter \$inboxConfig with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Commands/TestConnectionCommand.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Commands\\TestConnectionCommand\:\:testInboxConnection\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Commands/TestConnectionCommand.php
-
-		-
-			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\AccountManager\:\:testConnection\(\) invoked with 0 parameters, 1 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: src/Commands/TestConnectionCommand.php
 
 		-
 			message: '#^Method BassamShoukry\\LaravelChatwoot\\Events\\ContactCreated\:\:__construct\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
@@ -403,6 +313,9 @@ parameters:
 			path: src/Events/MessageUpdated.php
 
 		-
+			message: '#^Method BassamShoukry\\LaravelChatwoot\\Exceptions\\ChatwootApiException\:\:__construct\(\) has parameter \$responseData with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
 			path: src/Exceptions/ChatwootApiException.php
 
 		-
@@ -752,18 +665,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Jobs/SendMessageJob.php
-
-		-
-			message: '#^Call to an undefined method BassamShoukry\\LaravelChatwoot\\Services\\AccountManager\:\:getCurrentAccountInfo\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: src/LaravelChatwoot.php
-
-		-
-			message: '#^Call to an undefined method BassamShoukry\\LaravelChatwoot\\Services\\InboxManager\:\:getCurrentInboxInfo\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: src/LaravelChatwoot.php
 
 		-
 			message: '#^Call to an undefined method BassamShoukry\\LaravelChatwoot\\Services\\TemplateService\:\:getAvailableTemplates\(\)\.$#'
@@ -1384,14 +1285,20 @@ parameters:
 			path: src/Services/Api/AccountsApi.php
 
 		-
-			message: '#^Call to an undefined method BassamShoukry\\LaravelChatwoot\\Services\\AccountManager\:\:getCurrentAccountInfo\(\)\.$#'
+			message: '#^Call to an undefined method Illuminate\\Http\\Client\\Response\:\:when\(\)\.$#'
 			identifier: method.notFound
-			count: 2
+			count: 1
 			path: src/Services/Api/BaseApiService.php
 
 		-
-			message: '#^Call to an undefined method Illuminate\\Http\\Client\\Response\:\:when\(\)\.$#'
-			identifier: method.notFound
+			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\Api\\BaseApiService\:\:fetchAll\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Services/Api/BaseApiService.php
+
+		-
+			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\Api\\BaseApiService\:\:fetchAll\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
 			path: src/Services/Api/BaseApiService.php
 
@@ -1450,6 +1357,18 @@ parameters:
 			path: src/Services/Api/BaseApiService.php
 
 		-
+			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\Api\\BaseApiService\:\:paginate\(\) has parameter \$additionalParams with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Services/Api/BaseApiService.php
+
+		-
+			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\Api\\BaseApiService\:\:paginate\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Services/Api/BaseApiService.php
+
+		-
 			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\Api\\BaseApiService\:\:validateRequiredFields\(\) has parameter \$data with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -1464,18 +1383,6 @@ parameters:
 		-
 			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\Api\\BaseApiService\:\:validateRequiredFields\(\) throws checked exception InvalidArgumentException but it''s missing from the PHPDoc @throws tag\.$#'
 			identifier: missingType.checkedException
-			count: 1
-			path: src/Services/Api/BaseApiService.php
-
-		-
-			message: '#^Parameter \#3 \$httpCode of class BassamShoukry\\LaravelChatwoot\\Exceptions\\ChatwootApiException constructor expects int, null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Services/Api/BaseApiService.php
-
-		-
-			message: '#^Parameter \#4 \$responseData of class BassamShoukry\\LaravelChatwoot\\Exceptions\\ChatwootApiException constructor expects array, Exception given\.$#'
-			identifier: argument.type
 			count: 1
 			path: src/Services/Api/BaseApiService.php
 
@@ -1714,6 +1621,18 @@ parameters:
 			path: src/Services/Api/ConversationsApi.php
 
 		-
+			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\Api\\ConversationsApi\:\:getAll\(\) has parameter \$filters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Services/Api/ConversationsApi.php
+
+		-
+			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\Api\\ConversationsApi\:\:getAll\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Services/Api/ConversationsApi.php
+
+		-
 			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\Api\\ConversationsApi\:\:getByAssignee\(\) has parameter \$params with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -1775,6 +1694,18 @@ parameters:
 
 		-
 			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\Api\\ConversationsApi\:\:getMetrics\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Services/Api/ConversationsApi.php
+
+		-
+			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\Api\\ConversationsApi\:\:getPaginated\(\) has parameter \$filters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Services/Api/ConversationsApi.php
+
+		-
+			message: '#^Method BassamShoukry\\LaravelChatwoot\\Services\\Api\\ConversationsApi\:\:getPaginated\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Services/Api/ConversationsApi.php

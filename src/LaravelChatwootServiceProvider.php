@@ -2,10 +2,6 @@
 
 namespace BassamShoukry\LaravelChatwoot;
 
-use BassamShoukry\LaravelChatwoot\Commands\LaravelChatwootCommand;
-use BassamShoukry\LaravelChatwoot\Commands\SendTemplateCommand;
-use BassamShoukry\LaravelChatwoot\Commands\SyncTemplatesCommand;
-use BassamShoukry\LaravelChatwoot\Commands\TestConnectionCommand;
 use BassamShoukry\LaravelChatwoot\Services\AccountManager;
 use BassamShoukry\LaravelChatwoot\Services\Api\AccountsApi;
 use BassamShoukry\LaravelChatwoot\Services\Api\ContactsApi;
@@ -38,12 +34,6 @@ class LaravelChatwootServiceProvider extends PackageServiceProvider
                 'create_chatwoot_webhook_events_table',
                 'create_chatwoot_conversations_table',
                 'create_chatwoot_contacts_table',
-            ])
-            ->hasCommands([
-                LaravelChatwootCommand::class,
-                TestConnectionCommand::class,
-                SendTemplateCommand::class,
-                SyncTemplatesCommand::class,
             ])
             ->hasInstallCommand(function (SpatieInstallCommand $command) {
                 $command

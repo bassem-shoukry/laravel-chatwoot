@@ -1,9 +1,5 @@
 <?php
 
-use BassamShoukry\LaravelChatwoot\Commands\LaravelChatwootCommand;
-use BassamShoukry\LaravelChatwoot\Commands\SendTemplateCommand;
-use BassamShoukry\LaravelChatwoot\Commands\SyncTemplatesCommand;
-use BassamShoukry\LaravelChatwoot\Commands\TestConnectionCommand;
 use BassamShoukry\LaravelChatwoot\LaravelChatwoot;
 use BassamShoukry\LaravelChatwoot\LaravelChatwootServiceProvider;
 use BassamShoukry\LaravelChatwoot\Services\AccountManager;
@@ -160,28 +156,6 @@ describe('LaravelChatwootServiceProvider', function () {
             $accountManager = $this->app->make(AccountManager::class);
 
             expect($accountManager)->toBeInstanceOf(AccountManager::class);
-        });
-    });
-
-    describe('Command Registration', function () {
-        it('can create LaravelChatwootCommand', function () {
-            expect(fn () => $this->app->make(LaravelChatwootCommand::class))
-                ->not()->toThrow(Exception::class);
-        });
-
-        it('can create TestConnectionCommand', function () {
-            expect(fn () => $this->app->make(TestConnectionCommand::class))
-                ->not()->toThrow(Exception::class);
-        });
-
-        it('can create SendTemplateCommand', function () {
-            expect(fn () => $this->app->make(SendTemplateCommand::class))
-                ->not()->toThrow(Exception::class);
-        });
-
-        it('can create SyncTemplatesCommand', function () {
-            expect(fn () => $this->app->make(SyncTemplatesCommand::class))
-                ->not()->toThrow(Exception::class);
         });
     });
 
