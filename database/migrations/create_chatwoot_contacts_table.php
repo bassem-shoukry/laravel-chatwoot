@@ -1,42 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * @throws RuntimeException
-     */
     public function up(): void
     {
-        Schema::create('chatwoot_contacts', function (Blueprint $table) {
+        Schema::create('chatwoot_contacts', function (Blueprint $table): void {
             $table->id();
-            $table->unsignedBigInteger('account_id')->index();
-            $table->unsignedBigInteger('contact_id')->index();
-            $table->string('name')->nullable()->index();
-            $table->string('email')->nullable()->index();
-            $table->string('phone_number')->nullable()->index();
+            $table->string('account_name')->index();
+            $table->unsignedBigInteger('chatwoot_account_id');
+            $table->unsignedBigInteger('contact_id');
+            $table->string('name')->nullable();
+            $table->string('email')->nullable();
+            $table->string('phone_number')->nullable();
+            $table->string('identifier')->nullable();
             $table->string('avatar_url')->nullable();
-            $table->string('identifier')->nullable()->index();
-            $table->json('custom_attributes')->nullable();
             $table->json('additional_attributes')->nullable();
+            $table->json('custom_attributes')->nullable();
             $table->timestamps();
 
-            // Unique constraint to prevent duplicates
-            $table->unique(['account_id', 'contact_id'], 'unique_account_contact');
-
-            // Additional indexes for common lookups
-            $table->index(['account_id', 'email'], 'account_email_idx');
-            $table->index(['account_id', 'phone_number'], 'account_phone_idx');
-            $table->index(['account_id', 'identifier'], 'account_identifier_idx');
+            $table->unique(['account_name', 'contact_id']);
+            $table->index(['account_name', 'phone_number']);
+            $table->index(['account_name', 'identifier']);
         });
     }
 
-    /**
-     * @throws RuntimeException
-     */
     public function down(): void
     {
         Schema::dropIfExists('chatwoot_contacts');

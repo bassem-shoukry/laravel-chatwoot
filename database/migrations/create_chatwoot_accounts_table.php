@@ -1,37 +1,17 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+declare(strict_types=1);
 
+use Illuminate\Database\Migrations\Migration;
+
+/**
+ * Removed in v1: account configuration is now driven entirely by config/chatwoot.php
+ * (no DB row required). This file is kept as a no-op so existing migration tables
+ * can resolve the legacy filename without errors. New installs may delete it safely.
+ */
 return new class extends Migration
 {
-    /**
-     * @throws RuntimeException
-     */
-    public function up(): void
-    {
-        Schema::create('chatwoot_accounts', function (Blueprint $table) {
-            $table->id();
-            $table->string('account_key')->unique(); // 'primary', 'secondary', etc.
-            $table->string('name');
-            $table->string('url');
-            $table->text('token')->nullable(); // encrypted
-            $table->json('config')->nullable(); // inbox configs, etc.
-            $table->boolean('is_active')->default(true);
-            $table->timestamp('token_expires_at')->nullable();
-            $table->timestamp('last_verified_at')->nullable();
-            $table->timestamps();
+    public function up(): void {}
 
-            $table->index(['account_key', 'is_active']);
-        });
-    }
-
-    /**
-     * @throws RuntimeException
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('chatwoot_accounts');
-    }
+    public function down(): void {}
 };

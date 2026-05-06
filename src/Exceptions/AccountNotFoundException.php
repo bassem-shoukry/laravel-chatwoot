@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BassamShoukry\LaravelChatwoot\Exceptions;
 
-use Exception;
-
-class AccountNotFoundException extends Exception
+final class AccountNotFoundException extends ChatwootException
 {
-    public function __construct(string $message = 'Chatwoot account not found', int $code = 404, ?\Throwable $previous = null)
+    public static function for(string $name): self
     {
-        parent::__construct($message, $code, $previous);
+        return new self("Chatwoot account [{$name}] is not configured.");
     }
 }
