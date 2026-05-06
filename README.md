@@ -205,6 +205,11 @@ Or just `Http::fake()` against the Chatwoot endpoints — the package's
 - Webhook signatures are checked with `hash_equals`. Default is **strict**:
   no signature → 401.
 
+## Support
+
+Bug reports and feature requests: [GitHub Issues](https://github.com/bassem-shoukry/laravel-chatwoot/issues).
+See [CHANGELOG.md](CHANGELOG.md) for release notes.
+
 ## License
 
 MIT — see [LICENSE.md](LICENSE.md).
