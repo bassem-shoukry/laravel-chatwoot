@@ -7,11 +7,11 @@ namespace BassamShoukry\LaravelChatwoot\Support;
 use BassamShoukry\LaravelChatwoot\Contracts\TokenVault;
 use BassamShoukry\LaravelChatwoot\Exceptions\ConfigurationException;
 use Illuminate\Contracts\Encryption\DecryptException;
-use Illuminate\Contracts\Encryption\Encrypter;
+use Illuminate\Contracts\Encryption\StringEncrypter;
 
 final class CryptTokenVault implements TokenVault
 {
-    public function __construct(private readonly Encrypter $encrypter) {}
+    public function __construct(private readonly StringEncrypter $encrypter) {}
 
     public function encrypt(string $plaintext): string
     {

@@ -43,7 +43,7 @@ final class WebhookController
         }
 
         $payload = $request->all();
-        if (! is_array($payload) || $payload === []) {
+        if ($payload === []) {
             return response()->json(['ok' => false, 'error' => 'empty_payload'], 400);
         }
 

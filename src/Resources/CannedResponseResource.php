@@ -15,7 +15,7 @@ final class CannedResponseResource extends BaseResource
     {
         $response = $this->client->get($this->accountPath('canned_responses'));
 
-        return collect($this->arrayOfArrays(is_array($response) ? $response : []));
+        return collect($this->arrayOfArrays($response));
     }
 
     /**

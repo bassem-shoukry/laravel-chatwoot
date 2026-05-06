@@ -12,7 +12,7 @@ use BassamShoukry\LaravelChatwoot\Support\CryptTokenVault;
 use BassamShoukry\LaravelChatwoot\Webhooks\HmacSignatureVerifier;
 use BassamShoukry\LaravelChatwoot\Webhooks\WebhookController;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
-use Illuminate\Contracts\Encryption\Encrypter;
+use Illuminate\Contracts\Encryption\StringEncrypter;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Route;
@@ -42,7 +42,7 @@ class LaravelChatwootServiceProvider extends PackageServiceProvider
     public function packageRegistered(): void
     {
         $this->app->singleton(TokenVault::class, static fn (Application $app): TokenVault => new CryptTokenVault(
-            $app->make(Encrypter::class),
+            $app->make(StringEncrypter::class),
         ));
 
         $this->app->singleton(AccountResolver::class, static fn (Application $app): AccountResolver => new AccountManager(
