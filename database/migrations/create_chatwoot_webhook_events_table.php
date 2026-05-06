@@ -1,37 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * @throws RuntimeException
-     */
     public function up(): void
     {
-        Schema::create('chatwoot_webhook_events', function (Blueprint $table) {
+        Schema::create('chatwoot_webhook_events', function (Blueprint $table): void {
             $table->id();
-            $table->string('account_key');
-            $table->string('event_type'); // 'conversation_created', 'message_created', etc.
+            $table->string('account_name')->index();
+            $table->string('event')->index();
             $table->json('payload');
-            $table->string('signature')->nullable();
             $table->boolean('verified')->default(false);
-            $table->boolean('processed')->default(false);
-            $table->text('processing_error')->nullable();
             $table->timestamps();
 
-            $table->index(['account_key', 'event_type', 'processed']);
-            $table->index(['created_at', 'processed']);
-            $table->index(['verified', 'processed']);
-            $table->foreign('account_key')->references('account_key')->on('chatwoot_accounts')->onDelete('cascade');
+            $table->index(['account_name', 'event', 'created_at']);
         });
     }
 
-    /**
-     * @throws RuntimeException
-     */
     public function down(): void
     {
         Schema::dropIfExists('chatwoot_webhook_events');

@@ -1,438 +1,210 @@
 # Laravel Chatwoot
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/bassamshoukry/laravel-chatwoot.svg?style=flat-square)](https://packagist.org/packages/bassamshoukry/laravel-chatwoot)
-[![Total Downloads](https://img.shields.io/packagist/dt/bassamshoukry/laravel-chatwoot.svg?style=flat-square)](https://packagist.org/packages/bassamshoukry/laravel-chatwoot)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/bassem-shoukry/laravel-chatwoot.svg?style=flat-square)](https://packagist.org/packages/bassem-shoukry/laravel-chatwoot)
+[![Total Downloads](https://img.shields.io/packagist/dt/bassem-shoukry/laravel-chatwoot.svg?style=flat-square)](https://packagist.org/packages/bassem-shoukry/laravel-chatwoot)
+[![License](https://img.shields.io/packagist/l/bassem-shoukry/laravel-chatwoot.svg?style=flat-square)](LICENSE.md)
 
-A comprehensive Laravel package for integrating with the Chatwoot API. Supports multi-account management, conversations, contacts, messages, webhooks, and template messaging.
+Typed Chatwoot API client and webhook receiver for Laravel.
 
-## Features
+- Strongly-typed DTOs (`Conversation`, `Message`, `Contact`, `Inbox`, …)
+- Resource gateways (`Chatwoot::messages()`, `Chatwoot::conversations()`, …)
+- HMAC-verified webhook controller with typed events
+- Multi-account, immutable account switching
+- SSRF guard, scrubbed request/response logging, automatic retry on `429`/`5xx`
+- Built-in `ChatwootFake` for tests
+- PHP 8.3 / 8.4 · Laravel 11 / 12 / 13
 
-- **Multi-Account Support**: Manage multiple Chatwoot accounts from a single Laravel application
-- **Multi-Inbox Routing**: Route messages to different inboxes within accounts
-- **Comprehensive API Coverage**:
-  - Conversations (create, list, update, search, filters)
-  - Messages (send, receive, list, bulk operations)
-  - Contacts (CRUD, search, merge, custom attributes)
-  - Labels (create, list, update, delete, assign)
-  - Accounts & Inboxes management
-- **Webhook Handling**: Receive and process Chatwoot webhook events
-- **Template System**: Store and process message templates
-- **Queue Support**: Async message sending with Laravel queues
-- **Rate Limiting**: Client-side rate limit tracking per inbox
-- **Pagination**: Generic pagination helpers for all API endpoints
-- **Database Tracking**: Optional local storage of conversations, messages, and contacts
-- **Artisan Commands**: CLI tools for connection testing, template sync, and status checking
-
-## Requirements
-
-- PHP ^8.4
-- Laravel ^11.0 || ^12.0
-- Chatwoot instance (cloud or self-hosted)
-
-## Installation
-
-Install the package via Composer:
+## Install
 
 ```bash
-composer require bassamshoukry/laravel-chatwoot
+composer require bassem-shoukry/laravel-chatwoot
+php artisan vendor:publish --tag=laravel-chatwoot-config
 ```
 
-Publish the configuration file:
+Set the env keys:
 
-```bash
-php artisan vendor:publish --tag="chatwoot-config"
+```env
+CHATWOOT_URL=https://app.chatwoot.com
+CHATWOOT_API_TOKEN=your-user-api-access-token
+CHATWOOT_ACCOUNT_ID=1
+CHATWOOT_VERIFY_SIGNATURE=true
+CHATWOOT_HMAC_SECRET=whsec_your_webhook_signing_secret
 ```
 
-(Optional) Publish and run migrations if you want local database tracking:
+The `CHATWOOT_API_TOKEN` is a Chatwoot **User Access Token** (Profile → Access
+Token). Tokens stored in config are decrypted with the application key on read,
+so you may store them encrypted using `Crypt::encryptString` for defence in
+depth.
 
-```bash
-php artisan vendor:publish --tag="chatwoot-migrations"
-php artisan migrate
-```
-
-## Configuration
-
-### Basic Setup
-
-Edit `config/chatwoot.php` and configure your Chatwoot accounts:
+## Send messages
 
 ```php
-return [
-    'accounts' => [
-        'primary' => [
-            'url' => env('CHATWOOT_URL', 'https://app.chatwoot.com'),
-            'api_token' => env('CHATWOOT_API_TOKEN'),
-            'account_id' => env('CHATWOOT_ACCOUNT_ID'),
-            'inboxes' => [
-                'support' => [
-                    'inbox_id' => env('CHATWOOT_INBOX_ID'),
-                    'channels' => ['website', 'api'],
-                ],
-            ],
-        ],
-    ],
-];
+use BassamShoukry\LaravelChatwoot\Facades\Chatwoot;
+
+// Plain text
+Chatwoot::messages()->send($conversationId, 'Hello there');
+
+// Interactive buttons (mapped to Chatwoot's input_select content type)
+Chatwoot::messages()->sendInteractiveButtons($conversationId, 'Pick one', [
+    ['title' => 'Yes', 'value' => 'yes'],
+    ['title' => 'No',  'value' => 'no'],
+]);
+
+// WhatsApp template
+Chatwoot::messages()->sendTemplate(
+    conversationId: $conversationId,
+    name: 'order_update',
+    language: 'en',
+    components: [/* WhatsApp template components */],
+);
+
+// Raw passthrough — escape hatch for advanced WhatsApp payloads (Flows etc.)
+Chatwoot::messages()->sendRaw($conversationId, [
+    'flow_action' => 'navigate',
+    'flow_id'     => 'abc123',
+]);
 ```
 
-### Multi-Account Configuration
+## Find or create a contact, then a conversation
+
+Useful when reacting to an inbound message on a channel keyed by a `source_id`
+(e.g. WhatsApp's wa_id):
+
+```php
+$contact = Chatwoot::contacts()->findOrCreate(
+    inboxId: $inboxId,
+    sourceId: $waId,
+    name: $name,
+    phoneNumber: '+'.$waId,
+);
+
+$conv = Chatwoot::conversations()->firstOrCreateForContact(
+    contactId: $contact->id,
+    inboxId: $inboxId,
+    sourceId: $waId,
+);
+
+Chatwoot::messages()->send($conv->id, 'Welcome 👋');
+```
+
+## Multi-account
+
+```env
+CHATWOOT_ACCOUNT=primary
+```
 
 ```php
 'accounts' => [
-    'sales' => [
-        'url' => env('CHATWOOT_SALES_URL'),
-        'api_token' => env('CHATWOOT_SALES_TOKEN'),
-        'account_id' => env('CHATWOOT_SALES_ACCOUNT_ID'),
-        'inboxes' => [
-            'website' => [
-                'inbox_id' => 123,
-                'channels' => ['website'],
-            ],
-            'whatsapp' => [
-                'inbox_id' => 456,
-                'channels' => ['whatsapp'],
-            ],
-        ],
+    'primary' => [
+        'url'        => env('CHATWOOT_URL'),
+        'token'      => env('CHATWOOT_API_TOKEN'),
+        'account_id' => env('CHATWOOT_ACCOUNT_ID'),
     ],
-    'support' => [
-        'url' => env('CHATWOOT_SUPPORT_URL'),
-        'api_token' => env('CHATWOOT_SUPPORT_TOKEN'),
-        'account_id' => env('CHATWOOT_SUPPORT_ACCOUNT_ID'),
-        'inboxes' => [
-            'email' => [
-                'inbox_id' => 789,
-                'channels' => ['email'],
-            ],
-        ],
+    'eu' => [
+        'url'        => env('CHATWOOT_EU_URL'),
+        'token'      => env('CHATWOOT_EU_API_TOKEN'),
+        'account_id' => env('CHATWOOT_EU_ACCOUNT_ID'),
     ],
 ],
 ```
 
-## Usage
+```php
+Chatwoot::account('eu')->messages()->send($id, 'Hallo');
+```
 
-### Basic Usage
+`account()` returns an immutable, scoped manager — it never mutates the shared
+singleton.
+
+## Receive webhooks
+
+Routes are **opt-in**. Register them where you control the URL prefix and
+middleware:
 
 ```php
-use BassamShoukry\LaravelChatwoot\Facades\LaravelChatwoot;
+// routes/api.php
+use BassamShoukry\LaravelChatwoot\LaravelChatwootServiceProvider;
 
-// Set account context
-LaravelChatwoot::account('primary')->inbox('support');
-
-// Or use the fluent API
-LaravelChatwoot::for('primary', 'support');
+LaravelChatwootServiceProvider::routes(
+    prefix: 'api/webhooks/chatwoot',
+    middleware: ['api'],
+);
 ```
 
-### Conversations
+This exposes:
 
-```php
-// List conversations
-$conversations = LaravelChatwoot::conversations()->list();
+- `POST /api/webhooks/chatwoot` — uses the default account
+- `POST /api/webhooks/chatwoot/{account}` — multi-account fan-in
 
-// Get paginated conversations
-$page1 = LaravelChatwoot::conversations()->getPaginated(page: 1, perPage: 25);
+Every payload is verified against `chatwoot.accounts.{account}.webhook.secret`
+(or the global `chatwoot.webhooks.secret`) using HMAC-SHA256 against the raw
+body. Verification is **on by default**; set `verify_signature` to `false`
+explicitly only when you must.
 
-// Get all conversations (auto-pagination)
-$allConversations = LaravelChatwoot::conversations()->getAll();
-
-// Create a conversation
-$conversation = LaravelChatwoot::conversations()->create([
-    'source_id' => 'unique-source-id',
-    'inbox_id' => 123,
-    'contact_id' => 456,
-]);
-
-// Get specific conversation
-$conversation = LaravelChatwoot::conversations()->get($conversationId);
-
-// Update conversation status
-LaravelChatwoot::conversations()->updateStatus($conversationId, 'resolved');
-
-// Assign to agent
-LaravelChatwoot::conversations()->assign($conversationId, $agentId);
-
-// Add labels
-LaravelChatwoot::conversations()->addLabels($conversationId, ['urgent', 'billing']);
-
-// Search conversations
-$results = LaravelChatwoot::conversations()->search('customer query');
-```
-
-### Messages
-
-```php
-// Send a message
-$message = LaravelChatwoot::messages()->send($conversationId, [
-    'content' => 'Hello, how can we help you?',
-    'message_type' => 'outgoing',
-]);
-
-// Send message with queue
-LaravelChatwoot::queueMessage($conversationId, [
-    'content' => 'This will be sent via queue',
-]);
-
-// Get messages for a conversation
-$messages = LaravelChatwoot::conversations()->getMessages($conversationId);
-
-// Send template message
-LaravelChatwoot::sendTemplate('welcome_template', [
-    'customer_name' => 'John Doe',
-], [
-    'conversation_id' => $conversationId,
-]);
-
-// Bulk send messages
-LaravelChatwoot::sendBulkMessages($conversationIds, [
-    'content' => 'Broadcast message',
-]);
-```
-
-### Contacts
-
-```php
-// List contacts
-$contacts = LaravelChatwoot::contacts()->list();
-
-// Get paginated contacts
-$page1 = LaravelChatwoot::contacts()->getPaginated(page: 1, perPage: 50);
-
-// Get all contacts (auto-pagination)
-$allContacts = LaravelChatwoot::contacts()->getAll();
-
-// Create a contact
-$contact = LaravelChatwoot::contacts()->create([
-    'name' => 'John Doe',
-    'email' => 'john@example.com',
-    'phone_number' => '+1234567890',
-]);
-
-// Update contact
-LaravelChatwoot::contacts()->update($contactId, [
-    'name' => 'Jane Doe',
-]);
-
-// Search contacts
-$results = LaravelChatwoot::contacts()->search('john@example.com');
-
-// Find or create contact
-$contact = LaravelChatwoot::contacts()->findOrCreate([
-    'identifier' => 'john@example.com',
-    'name' => 'John Doe',
-]);
-
-// Merge contacts
-LaravelChatwoot::contacts()->merge($primaryContactId, $duplicateContactId);
-
-// Add labels
-LaravelChatwoot::contacts()->addLabels($contactId, ['vip', 'premium']);
-```
-
-### Labels
-
-```php
-// List all labels
-$labels = LaravelChatwoot::accounts()->getLabels();
-
-// Create a label
-$label = LaravelChatwoot::accounts()->createLabel([
-    'title' => 'VIP Customer',
-    'description' => 'High-value customers',
-    'color' => '#FF6B6B',
-]);
-
-// Update label
-LaravelChatwoot::accounts()->updateLabel($labelId, [
-    'title' => 'Premium Customer',
-]);
-
-// Delete label
-LaravelChatwoot::accounts()->deleteLabel($labelId);
-```
-
-### Webhooks
-
-#### Setup Webhook Route
-
-The package automatically registers webhook routes. Configure your Chatwoot instance to send webhooks to:
-
-```
-https://your-app.com/api/chatwoot/webhook
-```
-
-#### Enable Webhook Signature Verification
-
-In `config/chatwoot.php`:
-
-```php
-'webhooks' => [
-    'enabled' => true,
-    'verify_signature' => true,
-    'secret' => env('CHATWOOT_WEBHOOK_SECRET'),
-    'fire_events' => true,
-],
-```
-
-#### Listen to Webhook Events
+Listen for events:
 
 ```php
 use BassamShoukry\LaravelChatwoot\Events\MessageCreated;
 
-class HandleNewMessage
-{
-    public function handle(MessageCreated $event)
-    {
-        $message = $event->message;
-        $conversation = $event->conversation;
-        $account = $event->account;
-
-        // Your logic here
-    }
-}
+Event::listen(MessageCreated::class, function (MessageCreated $event): void {
+    // $event->message is a typed Message DTO
+    // $event->accountName is the account that received the webhook
+});
 ```
 
-Available events:
-- `ConversationCreated`
-- `ConversationUpdated`
-- `ConversationStatusChanged`
-- `MessageCreated`
-- `MessageUpdated`
-- `ContactCreated`
-- `ContactUpdated`
+Available events: `WebhookReceived`, `MessageCreated`, `MessageUpdated`,
+`ConversationCreated`, `ConversationUpdated`, `ConversationStatusChanged`,
+`ContactCreated`, `ContactUpdated`.
 
-### Templates
+## Tracking (opt-in)
 
-#### Store Templates
+Set `CHATWOOT_TRACKING_ENABLED=true` to enable the package migrations:
 
-```php
-// In your application
-LaravelChatwoot::templates()->store('welcome_message', [
-    'content' => [
-        'text' => 'Hello {{customer_name}}, welcome to our service!',
-        'type' => 'text',
-    ],
-], 'primary');
-```
+- `chatwoot_contacts`
+- `chatwoot_conversations`
+- `chatwoot_messages`
+- `chatwoot_webhook_events`
 
-#### Sync Templates from Files
+Then publish + run:
 
 ```bash
-php artisan chatwoot:sync-templates primary --source=file
+php artisan vendor:publish --tag=laravel-chatwoot-migrations
+php artisan migrate
 ```
 
-#### Send Template Message
-
-```php
-LaravelChatwoot::account('primary')
-    ->inbox('support')
-    ->sendTemplate('welcome_message', [
-        'customer_name' => 'John Doe',
-    ], [
-        'contact' => [
-            'identifier' => 'john@example.com',
-            'name' => 'John Doe',
-        ],
-    ]);
-```
-
-## Artisan Commands
-
-### Check Package Status
-
-```bash
-php artisan chatwoot --status
-```
-
-### List Configured Accounts
-
-```bash
-php artisan chatwoot --accounts
-```
-
-### Test API Connection
-
-```bash
-# Test all accounts
-php artisan chatwoot:test-connection
-
-# Test specific account
-php artisan chatwoot:test-connection primary
-
-# Detailed output
-php artisan chatwoot:test-connection --detailed
-```
-
-### Send Template Message
-
-```bash
-php artisan chatwoot:send-template primary support welcome_template john@example.com \
-    --variables='{"name":"John"}' \
-    --contact-name="John Doe"
-```
-
-### Sync Templates
-
-```bash
-# Sync from files
-php artisan chatwoot:sync-templates primary --source=file
-
-# Sync with validation
-php artisan chatwoot:sync-templates --source=file --validate
-
-# Dry run
-php artisan chatwoot:sync-templates --source=file --dry-run
-```
-
-## Queue Configuration
-
-Enable queue processing for async message sending:
-
-```php
-'queue' => [
-    'enabled' => true,
-    'connection' => env('QUEUE_CONNECTION', 'redis'),
-    'queue' => env('CHATWOOT_QUEUE_NAME', 'chatwoot'),
-],
-```
-
-## Database Tracking
-
-The package can optionally track conversations, messages, contacts, and webhook events in your local database:
-
-```php
-'webhooks' => [
-    'track_conversations' => true,
-    'track_messages' => true,
-    'track_contacts' => true,
-],
-```
+Persistence itself is **not automatic** — write your own listeners using the
+provided Eloquent models so you control sync semantics.
 
 ## Testing
 
-```bash
-composer test
+```php
+use BassamShoukry\LaravelChatwoot\ChatwootManager;
+use BassamShoukry\LaravelChatwoot\Testing\ChatwootFake;
+
+$fake = ChatwootFake::swap();
+$fake->stub('POST', 'api/v1/accounts/1/conversations/9/messages', [
+    'id' => 7, 'content' => 'hello',
+]);
+
+app(ChatwootManager::class)->messages()->send(9, 'hello');
+
+expect($fake->calls)->toHaveCount(1);
 ```
 
-## Changelog
+Or just `Http::fake()` against the Chatwoot endpoints — the package's
+`ApiClient` is a regular Laravel HTTP client.
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+## Security notes
 
-## Contributing
-
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
-
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
-
-## Credits
-
-- [Bassem Shoukry](https://github.com/bassamshoukry)
-- [All Contributors](../../contributors)
+- Tokens read from config are decrypted automatically when encrypted with
+  `Crypt::encryptString`.
+- `chatwoot.allow_local_urls` is `false` by default. Loopback hosts
+  (localhost, 127.0.0.1, ::1, 0.0.0.0) and non-http(s) schemes are rejected
+  during account resolution to limit SSRF.
+- Outgoing logs scrub `Authorization`, `api_access_token`, `hmac_token`,
+  `Cookie` and known sensitive payload keys.
+- Webhook signatures are checked with `hash_equals`. Default is **strict**:
+  no signature → 401.
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
-
-## Resources
-
-- [Chatwoot API Documentation](https://developers.chatwoot.com/api-reference/introduction)
-- [Package Documentation](https://github.com/bassamshoukry/laravel-chatwoot)
+MIT — see [LICENSE.md](LICENSE.md).

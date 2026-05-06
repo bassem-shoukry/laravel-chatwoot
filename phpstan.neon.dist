@@ -1,36 +1,16 @@
 includes:
-    - phpstan-baseline.neon
-    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+    - vendor/larastan/larastan/extension.neon
 
 parameters:
     level: 6
     paths:
         - src
         - config
-        - database
     tmpDir: build/phpstan
-    
-    # Laravel specific checks
-    checkOctaneCompatibility: true
-    checkModelProperties: true
-    
-    # Enhanced type checking
     checkMissingCallableSignature: true
     checkUninitializedProperties: true
-    
-    # Exception handling
-    exceptions:
-        check:
-            missingCheckedExceptionInThrows: true
-            tooWideThrowType: true
-    
-    # Performance optimizations
     parallel:
         jobSize: 20
         maximumNumberOfProcesses: 4
         minimumNumberOfJobsPerProcess: 2
-    
-    # Additional strict checks
-    checkDynamicProperties: true
     reportMaybes: true
-    reportStaticMethodSignatures: true
