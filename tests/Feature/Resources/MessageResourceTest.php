@@ -94,3 +94,68 @@ it('translates 401 responses to AuthenticationException', function (): void {
     expect(fn () => app(ChatwootManager::class)->messages()->send(42, 'x'))
         ->toThrow(AuthenticationException::class);
 });
+
+it('sends a template with processed params, category and content', function (): void {
+    Http::fake([
+        '*/conversations/42/messages' => Http::response(['id' => 700], 200),
+    ]);
+
+    app(ChatwootManager::class)->messages()->sendTemplate(
+        conversationId: 42,
+        name: 'order_update',
+        language: 'en',
+        processedParams: ['1' => 'Bassem'],
+        category: 'UTILITY',
+        content: 'Hi Bassem, your order is ready.',
+    );
+
+    Http::assertSent(function ($request): bool {
+        $raw = $request->body();
+
+        return $request['content'] === 'Hi Bassem, your order is ready.'
+            && $request['template_params']['name'] === 'order_update'
+            && $request['template_params']['category'] === 'UTILITY'
+            && $request['template_params']['language'] === 'en'
+            // processed_params must be a JSON object, never an array — some
+            // providers reject `[]` with "must be of type hash".
+            && str_contains($raw, '"processed_params":{"1":"Bassem"}');
+    });
+});
+
+it('sends an empty processed_params object, not an array, when no params are given', function (): void {
+    Http::fake([
+        '*' => Http::response(['id' => 701], 200),
+    ]);
+
+    app(ChatwootManager::class)->messages()->sendTemplate(
+        conversationId: 42,
+        name: 'no_params_template',
+        language: 'en',
+    );
+
+    Http::assertSent(function ($request): bool {
+        $raw = $request->body();
+
+        return str_contains($raw, '"processed_params":{}')
+            && ! str_contains($raw, '"processed_params":[]');
+    });
+});
+
+it('omits components from the payload when none are given, and includes them when present', function (): void {
+    Http::fake([
+        '*' => Http::response(['id' => 702], 200),
+    ]);
+
+    app(ChatwootManager::class)->messages()->sendTemplate(42, 'order_update', 'en');
+
+    Http::assertSent(fn ($request): bool => ! array_key_exists('components', $request['template_params']));
+
+    app(ChatwootManager::class)->messages()->sendTemplate(
+        conversationId: 42,
+        name: 'order_update',
+        language: 'en',
+        components: [['type' => 'button', 'sub_type' => 'url']],
+    );
+
+    Http::assertSent(fn ($request): bool => ($request['template_params']['components'][0]['type'] ?? null) === 'button');
+});
