@@ -2,6 +2,24 @@
 
 All notable changes to `bassem-shoukry/laravel-chatwoot` will be documented in this file.
 
+## v1.1.0 - 2026-08-11
+
+### Fixed
+
+- `MessageResource::sendTemplate()` can now carry template parameters. It previously hardcoded `category => 'utility'`, `processed_params => (object) []` and `content: ''`, so it could only ever send a parameterless template. Added optional `$processedParams`, `$category`, `$content` — additive, existing calls still work. `processed_params` is always sent as a JSON object, never `[]` (some providers reject an array here). `$components` is now only included in the payload when non-empty.
+
+### Added
+
+- `ContactResource::conversations(int $contactId)` — lists a contact's conversations. Mirrors `ConversationResource::list()`'s payload unwrapping.
+
+### Removed
+
+- Stale `USAGE.md` — every example referenced classes that don't exist in `src/`. `README.md` is accurate and covers the same ground.
+
+### Chores
+
+- Bumped `actions/checkout` from v6 to v7 in CI workflows.
+
 ## v1.0.0 — Initial public release
 
 ### Breaking changes
