@@ -94,27 +94,43 @@ final class MessageResource extends BaseResource
     }
 
     /**
-     * @param array<int, mixed> $components
+     * @param array<string, mixed> $processedParams parameter values keyed by
+     *                                              placeholder (e.g. `['1' => 'Bassem']`), or a
+     *                                              provider-specific nested shape (e.g.
+     *                                              `['body' => [...], 'buttons' => [...]]`).
+     *                                              Always sent as a JSON object, never `[]` —
+     *                                              some providers reject an array here.
+     * @param array<int, mixed>    $components      optional WhatsApp template components
+     *                                              (buttons, media headers, …); omitted from the
+     *                                              payload entirely when empty.
      */
     public function sendTemplate(
         int $conversationId,
         string $name,
         string $language,
+        array $processedParams = [],
+        string $category = 'utility',
+        string $content = '',
         array $components = [],
     ): Message {
+        $templateParams = [
+            'name'             => $name,
+            'category'         => $category,
+            'language'         => $language,
+            'processed_params' => $processedParams === [] ? new \stdClass : (object) $processedParams,
+        ];
+
+        if ($components !== []) {
+            $templateParams['components'] = $components;
+        }
+
         return $this->send(
             conversationId: $conversationId,
-            content: '',
+            content: $content,
             type: MessageType::Outgoing,
             contentType: ContentType::Text,
             extra: [
-                'template_params' => [
-                    'name'             => $name,
-                    'category'         => 'utility',
-                    'language'         => $language,
-                    'processed_params' => (object) [],
-                    'components'       => $components,
-                ],
+                'template_params' => $templateParams,
             ],
         );
     }

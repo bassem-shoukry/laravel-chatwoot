@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BassamShoukry\LaravelChatwoot\Resources;
 
 use BassamShoukry\LaravelChatwoot\Data\Contact;
+use BassamShoukry\LaravelChatwoot\Data\Conversation;
 use Illuminate\Support\Collection;
 
 final class ContactResource extends BaseResource
@@ -30,6 +31,18 @@ final class ContactResource extends BaseResource
         $response = $this->client->get($this->accountPath("contacts/{$contactId}"));
 
         return Contact::from($this->unwrap($response));
+    }
+
+    /**
+     * @return Collection<int, Conversation>
+     */
+    public function conversations(int $contactId): Collection
+    {
+        $response = $this->client->get($this->accountPath("contacts/{$contactId}/conversations"));
+        $payload = $response['payload'] ?? [];
+
+        return collect($this->arrayOfArrays(is_array($payload) ? $payload : []))
+            ->map(static fn (array $row): Conversation => Conversation::from($row));
     }
 
     public function findBySourceId(int $inboxId, string $sourceId): ?Contact
