@@ -53,7 +53,16 @@ return [
         'timeout'        => (int) env('CHATWOOT_HTTP_TIMEOUT', 30),
         'retry_attempts' => (int) env('CHATWOOT_RETRY_ATTEMPTS', 3),
         'retry_delay'    => (int) env('CHATWOOT_RETRY_DELAY_MS', 500),
-        'user_agent'     => env('CHATWOOT_USER_AGENT', 'laravel-chatwoot/1.0'),
+
+        // POST/PATCH are NOT retried on 5xx or connection errors by default:
+        // Chatwoot may already have processed the request, and a retry would
+        // send the same message twice. 429s are retried for every method.
+        'retry_non_idempotent' => (bool) env('CHATWOOT_RETRY_NON_IDEMPOTENT', false),
+
+        // Longest Retry-After (seconds) the client will sleep for on a 429.
+        // Above this, a RateLimitException is thrown at once with retryAfter.
+        'max_retry_after' => (int) env('CHATWOOT_MAX_RETRY_AFTER', 60),
+        'user_agent'      => env('CHATWOOT_USER_AGENT', 'laravel-chatwoot/1.0'),
     ],
 
     /*

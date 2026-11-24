@@ -21,6 +21,8 @@ use Psr\Log\LoggerInterface;
 
 final class ApiClient implements ChatwootClient
 {
+    private const IDEMPOTENT_METHODS = ['GET', 'HEAD', 'PUT', 'DELETE', 'OPTIONS'];
+
     public function __construct(
         private readonly HttpFactory $http,
         private readonly ConfigRepository $config,
@@ -100,13 +102,20 @@ final class ApiClient implements ChatwootClient
         $maxAttempts = max(1, (int) $this->config->get('chatwoot.api.retry_attempts', 3));
         $baseDelay = max(0, (int) $this->config->get('chatwoot.api.retry_delay', 1000));
 
+        // A POST/PATCH that hit a 5xx or a timeout may already have been
+        // processed by Chatwoot; retrying it can send a customer the same
+        // message twice. Only idempotent methods are retried on those errors
+        // unless the app opts in. A 429 is retried for every method.
+        $retryServerErrors = in_array($method, self::IDEMPOTENT_METHODS, true)
+            || (bool) $this->config->get('chatwoot.api.retry_non_idempotent', false);
+
         while (true) {
             $attempt++;
 
             try {
                 $response = $this->newRequest()->send($method, $url, $this->buildOptions($query, $body));
             } catch (ConnectionException $e) {
-                if ($attempt >= $maxAttempts) {
+                if (! $retryServerErrors || $attempt >= $maxAttempts) {
                     throw new ServerException("Chatwoot connection failed: {$e->getMessage()}", 0, $e);
                 }
                 $this->sleep($baseDelay * $attempt);
@@ -117,10 +126,10 @@ final class ApiClient implements ChatwootClient
             $this->log($method, $url, $body, $response);
 
             if ($response->successful()) {
-                return $this->decode($response);
+                return $this->decodeSuccessful($response, $method, $url);
             }
 
-            if ($this->shouldRetry($response, $attempt, $maxAttempts)) {
+            if ($this->shouldRetry($response, $attempt, $maxAttempts, $retryServerErrors)) {
                 $this->sleep($this->retryDelay($response, $baseDelay, $attempt));
 
                 continue;
@@ -178,7 +187,7 @@ final class ApiClient implements ChatwootClient
         return $this->account->url . '/' . $path;
     }
 
-    private function shouldRetry(Response $response, int $attempt, int $maxAttempts): bool
+    private function shouldRetry(Response $response, int $attempt, int $maxAttempts, bool $retryServerErrors): bool
     {
         if ($attempt >= $maxAttempts) {
             return false;
@@ -186,19 +195,76 @@ final class ApiClient implements ChatwootClient
 
         $status = $response->status();
 
-        return $status === 429 || $status >= 500;
+        if ($status === 429) {
+            // Never block a worker on a Retry-After beyond the configured cap;
+            // surface the RateLimitException (with retryAfter) to the caller.
+            $retryAfter = $this->retryAfterSeconds($response);
+
+            return $retryAfter === null || $retryAfter <= $this->maxRetryAfter();
+        }
+
+        return $retryServerErrors && $status >= 500;
     }
 
     private function retryDelay(Response $response, int $baseDelay, int $attempt): int
     {
         if ($response->status() === 429) {
-            $retryAfter = (int) $response->header('Retry-After');
-            if ($retryAfter > 0) {
+            $retryAfter = $this->retryAfterSeconds($response);
+            if ($retryAfter !== null && $retryAfter > 0) {
                 return $retryAfter * 1000;
             }
         }
 
         return $baseDelay * $attempt;
+    }
+
+    private function maxRetryAfter(): int
+    {
+        return max(0, (int) $this->config->get('chatwoot.api.max_retry_after', 60));
+    }
+
+    /**
+     * Retry-After is either delta-seconds or an HTTP-date (RFC 9110 §10.2.3).
+     */
+    private function retryAfterSeconds(Response $response): ?int
+    {
+        $header = trim($response->header('Retry-After'));
+        if ($header === '') {
+            return null;
+        }
+
+        if (ctype_digit($header)) {
+            return (int) $header;
+        }
+
+        $timestamp = strtotime($header);
+
+        return $timestamp === false ? null : max(0, $timestamp - time());
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function decodeSuccessful(Response $response, string $method, string $url): array
+    {
+        $raw = trim($response->body());
+        if ($raw === '') {
+            return [];
+        }
+
+        $decoded = json_decode($raw, true);
+        if ($decoded === null && json_last_error() !== JSON_ERROR_NONE) {
+            // e.g. an HTML page from a proxy or captive portal: failing loudly
+            // beats returning a Message with id 0.
+            throw (new ChatwootException(sprintf(
+                'Chatwoot %s %s returned HTTP %d with a body that is not valid JSON.',
+                $method,
+                $url,
+                $response->status(),
+            )))->withContext(['status' => $response->status(), 'body' => []]);
+        }
+
+        return is_array($decoded) ? $decoded : [];
     }
 
     /**
@@ -264,7 +330,7 @@ final class ApiClient implements ChatwootClient
             $status === 404                    => new NotFoundException($message),
             $status === 422                    => new ValidationException($message),
             $status === 429                    => (new RateLimitException($message))->withRetryAfter(
-                (int) $response->header('Retry-After') ?: null,
+                $this->retryAfterSeconds($response) ?: null,
             ),
             $status >= 500 => new ServerException($message),
             default        => new ChatwootException($message),
