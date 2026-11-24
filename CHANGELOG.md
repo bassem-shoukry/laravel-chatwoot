@@ -2,6 +2,67 @@
 
 All notable changes to `bassem-shoukry/laravel-chatwoot` will be documented in this file.
 
+## Unreleased
+
+### Breaking (behaviour changes, no public method signatures changed)
+
+- `POST` and `PATCH` are no longer retried on `5xx` or connection errors
+  (including timeouts), because a retry could deliver the same message twice.
+  `429` is still retried. Set `chatwoot.api.retry_non_idempotent=true` for the
+  old behaviour.
+- A `Retry-After` longer than `chatwoot.api.max_retry_after` (default 60s) now
+  throws `RateLimitException` immediately instead of sleeping.
+- A `2xx` response with a non-empty body that is not JSON now throws
+  `ChatwootException` instead of returning `[]`.
+- HTTP redirects are no longer followed; a `3xx` now raises `ChatwootException`.
+- `ChatwootClient` calls with an absolute URL on a different origin than the
+  account URL throw `ChatwootException` instead of sending the token there.
+- Account URLs: `127.0.0.0/8`, `0.0.0.0/8`, `169.254.0.0/16`, `::`, `fe80::/10`,
+  IPv4-mapped loopback and numeric shorthands are now rejected unless
+  `allow_local_urls=true`; non-http(s) or hostless URLs are rejected even with
+  it.
+- A token that looks like a Laravel ciphertext but fails to decrypt throws
+  `ConfigurationException` instead of being sent as the token.
+- Webhooks: a request carrying `X-Chatwoot-Timestamp` is verified against
+  `"{timestamp}.{body}"` and rejected (`401 stale_timestamp`) outside
+  `chatwoot.webhooks.timestamp_tolerance` (default 300s). The dispatched
+  payload is the decoded JSON body only; query-string parameters are no longer
+  merged in, and a non-JSON body returns `400`.
+- Webhook account names are matched as `accounts` array keys, so a dotted
+  route segment such as `/default.webhook` now returns `404`.
+- `ChatwootException::context()['body']` has secret-looking keys redacted.
+- The shipped config's `default` account no longer sets its own `webhook`
+  block, so it inherits the global `webhooks` settings. Already-published
+  configs are unaffected.
+
+### Fixed
+
+- Webhook signatures from Chatwoot (`X-Chatwoot-Signature: sha256=…` over
+  `"{X-Chatwoot-Timestamp}.{body}"`) were rejected with `401`; they now verify.
+- Duplicate WhatsApp/template messages when a `POST` hit a `502` or timed out.
+- The API token leaked to other hosts through absolute URLs and through
+  redirects (Guzzle keeps the custom `api_access_token` header cross-host).
+- Logs and exception context no longer expose `hmac_token`, `pubsub_token`,
+  `page_access_token`, `webhook_secret`, `provider_config` and similar keys.
+- Account config changed at runtime (tenant switch, token rotation) is picked
+  up without a worker restart.
+- `ChatwootFake::swap()` works without any Chatwoot credentials configured,
+  and `setClient()` on an `account()` clone reaches the root manager.
+- Migrations are offered for publishing even when the config file is not
+  published; the README now names the real tags (`chatwoot-config`,
+  `chatwoot-migrations`).
+
+### Added
+
+- Config: `api.retry_non_idempotent`, `api.max_retry_after`,
+  `webhooks.timestamp_tolerance` (also per account under `webhook`).
+- `ChatwootFake::swap(..., bool $preventStrayRequests = true)`.
+
+### Chores
+
+- CI tests Laravel 13; dev dependency `orchestra/testbench` widened to
+  `^9.0|^10.0|^11.1`.
+
 ## v1.1.0 - 2026-08-11
 
 ### Fixed

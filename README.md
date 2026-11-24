@@ -136,9 +136,13 @@ This exposes:
 - `POST /api/webhooks/chatwoot/{account}` — multi-account fan-in
 
 Every payload is verified against `chatwoot.accounts.{account}.webhook.secret`
-(or the global `chatwoot.webhooks.secret`) using HMAC-SHA256 against the raw
-body. Verification is **on by default**; set `verify_signature` to `false`
-explicitly only when you must.
+(or the global `chatwoot.webhooks.secret`) using HMAC-SHA256. Chatwoot sends
+`X-Chatwoot-Timestamp` and signs `"{timestamp}.{raw body}"`; requests without
+the timestamp header are checked against the raw body alone. Deliveries whose
+timestamp is more than `chatwoot.webhooks.timestamp_tolerance` seconds old
+(default 300, `0` disables) are rejected as replays. Verification is **on by
+default**; set `verify_signature` to `false` explicitly only when you must.
+Only the signed JSON body is dispatched; query-string parameters are ignored.
 
 Listen for events:
 
@@ -197,14 +201,30 @@ Or just `Http::fake()` against the Chatwoot endpoints — the package's
 ## Security notes
 
 - Tokens read from config are decrypted automatically when encrypted with
-  `Crypt::encryptString`.
-- `chatwoot.allow_local_urls` is `false` by default. Loopback hosts
-  (localhost, 127.0.0.1, ::1, 0.0.0.0) and non-http(s) schemes are rejected
-  during account resolution to limit SSRF.
-- Outgoing logs scrub `Authorization`, `api_access_token`, `hmac_token`,
-  `Cookie` and known sensitive payload keys.
+  `Crypt::encryptString`. A token that is encrypted but cannot be decrypted
+  with the current `APP_KEY` throws a `ConfigurationException`.
+- `chatwoot.allow_local_urls` is `false` by default. Account URLs must be
+  http(s) with a host in every environment; without the flag, loopback,
+  unspecified and link-local hosts (any spelling, including `[::1]`, `127.1`
+  and `169.254.169.254`) are rejected. Private-network hosts (10.x,
+  172.16–31.x, 192.168.x) stay allowed for self-hosted Chatwoot.
+- The API token is only ever sent to the account URL's origin: absolute URLs
+  on another origin are refused and redirects are not followed.
+- Logs and exception context scrub `Authorization`, `api_access_token`,
+  `Cookie`, any `*_token` / `*_secret` / `*_password` / `*_api_key` key and the
+  `provider_config` channel credentials.
 - Webhook signatures are checked with `hash_equals`. Default is **strict**:
   no signature → 401.
+
+## Retries
+
+`429` responses are retried for every method, honouring `Retry-After` up to
+`chatwoot.api.max_retry_after` seconds (default 60; above that a
+`RateLimitException` with `retryAfter` is thrown at once). `5xx` responses and
+connection errors are retried only for `GET`, `PUT` and `DELETE`: a `POST` that
+timed out may already have been processed, and retrying it could send the same
+message twice. Set `chatwoot.api.retry_non_idempotent=true` to retry `POST` and
+`PATCH` too.
 
 ## Support
 
