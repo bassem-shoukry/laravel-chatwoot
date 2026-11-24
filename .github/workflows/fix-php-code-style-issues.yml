@@ -2,6 +2,9 @@ name: Fix PHP code style issues
 
 on:
   push:
+    # Branches only: on a tag push the checkout is a detached HEAD and there
+    # is no branch to commit style fixes back to.
+    branches: ['**']
     paths:
       - '**.php'
 
@@ -16,8 +19,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
-        with:
-          ref: ${{ github.head_ref }}
 
       - name: Fix PHP code style issues
         uses: aglipanci/laravel-pint-action@2.6
