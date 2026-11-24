@@ -2,6 +2,9 @@ name: run-tests
 
 on:
   push:
+    # Branches only: a tag push would re-run the whole matrix on a commit
+    # that was already tested.
+    branches: ['**']
     paths:
       - '**.php'
       - '.github/workflows/run-tests.yml'
@@ -22,15 +25,13 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         php: [8.4, 8.3]
-        laravel: [13.*, 12.*, 11.*]
+        laravel: [13.*, 12.*]
         stability: [prefer-lowest, prefer-stable]
         include:
           - laravel: 13.*
             testbench: 11.*
           - laravel: 12.*
             testbench: 10.*
-          - laravel: 11.*
-            testbench: 9.*
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
 

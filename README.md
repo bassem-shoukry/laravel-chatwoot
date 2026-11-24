@@ -12,7 +12,7 @@ Typed Chatwoot API client and webhook receiver for Laravel.
 - Multi-account, immutable account switching
 - SSRF guard, scrubbed request/response logging, automatic retry on `429`/`5xx`
 - Built-in `ChatwootFake` for tests
-- PHP 8.3 / 8.4 · Laravel 11 / 12 / 13
+- PHP 8.3+ · Laravel 12 / 13
 
 ## Install
 
