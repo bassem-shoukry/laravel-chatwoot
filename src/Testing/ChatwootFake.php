@@ -95,12 +95,21 @@ final class ChatwootFake implements ChatwootClient
         $manager->setClient($accountName, $this);
     }
 
-    public static function swap(string $accountName = 'default'): self
+    /**
+     * @param bool $preventStrayRequests calls Http::preventStrayRequests(),
+     *                                   which affects every Http:: call in the
+     *                                   test, not only Chatwoot ones; pass
+     *                                   false to leave other HTTP calls alone
+     */
+    public static function swap(string $accountName = 'default', bool $preventStrayRequests = true): self
     {
         $fake = new self;
         $manager = app(ChatwootManager::class);
         $fake->bindTo($manager, $accountName);
-        Http::preventStrayRequests();
+
+        if ($preventStrayRequests) {
+            Http::preventStrayRequests();
+        }
 
         return $fake;
     }

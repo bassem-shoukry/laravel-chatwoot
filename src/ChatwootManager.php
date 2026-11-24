@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BassamShoukry\LaravelChatwoot;
 
+use ArrayObject;
 use BassamShoukry\LaravelChatwoot\Contracts\AccountResolver;
 use BassamShoukry\LaravelChatwoot\Contracts\ChatwootClient;
 use BassamShoukry\LaravelChatwoot\Http\ApiClient;
@@ -22,17 +23,22 @@ use Psr\Log\LoggerInterface;
 
 final class ChatwootManager
 {
-    /** @var array<string, ChatwootClient> */
-    private array $clients = [];
+    /**
+     * Client registry shared by this manager and every account() clone, so a
+     * client registered or built on a clone is visible to the root manager.
+     *
+     * @var ArrayObject<string, ChatwootClient>
+     */
+    private ArrayObject $clients;
 
     /**
      * The account context each auto-built client was created for, so a
      * client is rebuilt when its account config changes. Clients registered
      * through setClient() have no entry and are never replaced.
      *
-     * @var array<string, AccountContext>
+     * @var ArrayObject<string, AccountContext>
      */
-    private array $builtFor = [];
+    private ArrayObject $builtFor;
 
     private ?string $boundAccount = null;
 
@@ -41,7 +47,10 @@ final class ChatwootManager
         private readonly HttpFactory $http,
         private readonly ConfigRepository $config,
         private readonly LoggerInterface $logger,
-    ) {}
+    ) {
+        $this->clients = new ArrayObject;
+        $this->builtFor = new ArrayObject;
+    }
 
     public function account(?string $name = null): self
     {
@@ -53,6 +62,13 @@ final class ChatwootManager
 
     public function client(): ChatwootClient
     {
+        // A client registered with setClient() (e.g. ChatwootFake) needs no
+        // account config at all, so check it before resolving the account.
+        $requested = $this->boundAccount ?? (string) $this->config->get('chatwoot.default_account', 'default');
+        if (isset($this->clients[$requested]) && ! isset($this->builtFor[$requested])) {
+            return $this->clients[$requested];
+        }
+
         $context = $this->accounts->resolve($this->boundAccount);
         $name = $context->name;
 
