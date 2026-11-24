@@ -34,12 +34,13 @@ return [
             'token'      => env('CHATWOOT_API_TOKEN'),
             'account_id' => (int) env('CHATWOOT_ACCOUNT_ID', 0),
 
-            // Optional: per-account webhook overrides. When unset, falls back to
-            // the global `webhooks` block.
-            'webhook' => [
-                'verify_signature' => env('CHATWOOT_VERIFY_SIGNATURE', true),
-                'secret'           => env('CHATWOOT_HMAC_SECRET'),
-            ],
+            // Optional per-account webhook overrides. Any key left out (or null)
+            // falls back to the global `webhooks` block below, e.g.:
+            // 'webhook' => [
+            //     'verify_signature'    => true,
+            //     'secret'              => env('CHATWOOT_DEFAULT_HMAC_SECRET'),
+            //     'timestamp_tolerance' => 300,
+            // ],
         ],
     ],
 
@@ -63,6 +64,11 @@ return [
     'webhooks' => [
         'verify_signature' => env('CHATWOOT_VERIFY_SIGNATURE', true),
         'secret'           => env('CHATWOOT_HMAC_SECRET'),
+
+        // Chatwoot sends X-Chatwoot-Timestamp and signs "{timestamp}.{body}".
+        // Deliveries older/newer than this many seconds are rejected as
+        // replays. 0 disables the check.
+        'timestamp_tolerance' => (int) env('CHATWOOT_WEBHOOK_TOLERANCE', 300),
     ],
 
     /*
