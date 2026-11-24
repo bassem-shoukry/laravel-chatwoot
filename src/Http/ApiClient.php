@@ -281,12 +281,14 @@ final class ApiClient implements ChatwootClient
         if ($decoded === null && json_last_error() !== JSON_ERROR_NONE) {
             // e.g. an HTML page from a proxy or captive portal: failing loudly
             // beats returning a Message with id 0.
-            throw (new ChatwootException(sprintf(
+            // No context on purpose: callers treat an empty context as "no
+            // usable HTTP error body" and fall back to this message.
+            throw new ChatwootException(sprintf(
                 'Chatwoot %s %s returned HTTP %d with a body that is not valid JSON.',
                 $method,
                 $url,
                 $response->status(),
-            )))->withContext(['status' => $response->status(), 'body' => []]);
+            ));
         }
 
         return is_array($decoded) ? $decoded : [];

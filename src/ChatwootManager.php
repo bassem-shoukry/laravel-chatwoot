@@ -72,7 +72,7 @@ final class ChatwootManager
         $context = $this->accounts->resolve($this->boundAccount);
         $name = $context->name;
 
-        if (isset($this->clients[$name]) && (! isset($this->builtFor[$name]) || $this->builtFor[$name] === $context)) {
+        if (isset($this->clients[$name]) && (! isset($this->builtFor[$name]) || $this->builtFor[$name] == $context)) {
             return $this->clients[$name];
         }
 

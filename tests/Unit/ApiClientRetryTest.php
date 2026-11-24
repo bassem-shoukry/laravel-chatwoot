@@ -127,8 +127,21 @@ it('understands an HTTP-date Retry-After', function (): void {
 it('throws on a 2xx response that is not JSON instead of returning an empty array', function (): void {
     Http::fake(['*' => Http::response('<html>proxy login</html>', 200, ['Content-Type' => 'text/html'])]);
 
-    expect(fn () => app(ChatwootManager::class)->messages()->send(5, 'hi'))
-        ->toThrow(ChatwootException::class, 'not valid JSON');
+    try {
+        app(ChatwootManager::class)->messages()->send(5, 'hi');
+        $this->fail('expected exception');
+    } catch (ChatwootException $e) {
+        // Empty context keeps consumers that branch on context() === [] on
+        // the package message instead of an empty HTTP body.
+        expect($e->getMessage())->toContain('not valid JSON')
+            ->and($e->context())->toBe([]);
+    }
+});
+
+it('reuses the built client while the resolved account is unchanged', function (): void {
+    $manager = app(ChatwootManager::class);
+
+    expect($manager->client())->toBe($manager->client());
 });
 
 it('still treats an empty 2xx body as an empty array', function (): void {

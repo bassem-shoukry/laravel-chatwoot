@@ -4,7 +4,7 @@ All notable changes to `bassem-shoukry/laravel-chatwoot` will be documented in t
 
 ## Unreleased
 
-### Breaking (behaviour changes, no public method signatures changed)
+### Breaking (behaviour changes; the only signature change is an optional new parameter on `ChatwootFake::swap()`)
 
 - `POST` and `PATCH` are no longer retried on `5xx` or connection errors
   (including timeouts), because a retry could deliver the same message twice.
@@ -31,6 +31,15 @@ All notable changes to `bassem-shoukry/laravel-chatwoot` will be documented in t
 - Webhook account names are matched as `accounts` array keys, so a dotted
   route segment such as `/default.webhook` now returns `404`.
 - `ChatwootException::context()['body']` has secret-looking keys redacted.
+- Logged request/response bodies (when body logging is on) now also redact
+  `provider_config` and every `*_token`, `*_secret`, `*_password` and
+  `*_api_key` key.
+- `ChatwootManager::account()` clones share one client registry with the root
+  manager, so `setClient()` on a clone is visible everywhere (it used to stay
+  local to the clone).
+- Account hosts written as numeric shorthands (`127.1`, `2130706433`,
+  `0x7f000001`, and also private ones such as `10.1`) are rejected unless
+  `allow_local_urls=true`; use the dotted form.
 - The shipped config's `default` account no longer sets its own `webhook`
   block, so it inherits the global `webhooks` settings. Already-published
   configs are unaffected.
