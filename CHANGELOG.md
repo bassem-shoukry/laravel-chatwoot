@@ -2,6 +2,24 @@
 
 All notable changes to `bassem-shoukry/laravel-chatwoot` will be documented in this file.
 
+## v2.0.1 - 2026-11-24
+
+### Breaking
+
+- Laravel 11 is no longer supported (`illuminate/*` is now `^12.0|^13.0`).
+  Composer refuses to install any `laravel/framework` 11.x release because
+  every one is affected by published security advisories, so it could not be
+  tested.
+
+### Chores
+
+- CI no longer runs on tag pushes (the tagged commit was already tested on its
+  branch), and the code-style job checks out the pushed branch instead of a
+  detached HEAD.
+- Dev only: `symfony/translation` is floored at `^7.2` so `--prefer-lowest`
+  runs don't print a PHP 8.4 deprecation from `symfony/translation` 6.4.0, and
+  PHPStan runs with `--memory-limit=1G`.
+
 ## v2.0.0 - 2026-11-24
 
 ### Breaking (behaviour changes; the only signature change is an optional new parameter on `ChatwootFake::swap()`)
