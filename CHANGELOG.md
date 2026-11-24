@@ -2,7 +2,7 @@
 
 All notable changes to `bassem-shoukry/laravel-chatwoot` will be documented in this file.
 
-## Unreleased
+## v2.0.0 - 2026-11-24
 
 ### Breaking (behaviour changes; the only signature change is an optional new parameter on `ChatwootFake::swap()`)
 
