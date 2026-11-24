@@ -153,6 +153,9 @@ final class ApiClient implements ChatwootClient
                 'User-Agent'       => $userAgent,
             ])
             ->timeout($timeout)
+            // Guzzle strips Authorization on a cross-host redirect but keeps
+            // the custom api_access_token header; the API never needs redirects.
+            ->withoutRedirecting()
             ->acceptJson()
             ->asJson();
     }
@@ -178,13 +181,35 @@ final class ApiClient implements ChatwootClient
 
     private function absoluteUrl(string $path): string
     {
-        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+        if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $path) === 1) {
+            // Every request carries the account token, so an absolute URL is
+            // only allowed on the account's own origin (scheme, host, port).
+            if ($this->origin($path) !== $this->origin($this->account->url)) {
+                throw new ChatwootException(sprintf(
+                    'Refusing to send the Chatwoot token to a different origin than the account URL [%s].',
+                    $this->origin($this->account->url),
+                ));
+            }
+
             return $path;
         }
 
         $path = ltrim($path, '/');
 
         return $this->account->url . '/' . $path;
+    }
+
+    private function origin(string $url): string
+    {
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+        $host = strtolower(rtrim((string) parse_url($url, PHP_URL_HOST), '.'));
+        $port = parse_url($url, PHP_URL_PORT) ?? match ($scheme) {
+            'http'  => 80,
+            'https' => 443,
+            default => null,
+        };
+
+        return "{$scheme}://{$host}:{$port}";
     }
 
     private function shouldRetry(Response $response, int $attempt, int $maxAttempts, bool $retryServerErrors): bool
@@ -336,6 +361,7 @@ final class ApiClient implements ChatwootClient
             default        => new ChatwootException($message),
         };
 
-        throw $exception->withContext(['status' => $status, 'body' => $body]);
+        // Laravel's exception handler logs context(); keep secrets out of it.
+        throw $exception->withContext(['status' => $status, 'body' => LogScrubber::body($body)]);
     }
 }

@@ -20,8 +20,17 @@ final class LogScrubber
         'api_key',
         'authorization',
         'password',
+        'provider_config', // channel credentials (WhatsApp api_key, tokens, ...)
         'secret',
         'token',
+    ];
+
+    /** Chatwoot uses hmac_token, pubsub_token, page_access_token, webhook_secret, ... */
+    private const SENSITIVE_SUFFIXES = [
+        '_api_key',
+        '_password',
+        '_secret',
+        '_token',
     ];
 
     /**
@@ -50,7 +59,7 @@ final class LogScrubber
     {
         $scrubbed = [];
         foreach ($payload as $key => $value) {
-            if (is_string($key) && in_array(strtolower($key), self::SENSITIVE_KEYS, true)) {
+            if (is_string($key) && self::isSensitiveKey($key)) {
                 $scrubbed[$key] = self::REDACTED;
 
                 continue;
@@ -60,5 +69,22 @@ final class LogScrubber
         }
 
         return $scrubbed;
+    }
+
+    private static function isSensitiveKey(string $key): bool
+    {
+        $key = strtolower($key);
+
+        if (in_array($key, self::SENSITIVE_KEYS, true)) {
+            return true;
+        }
+
+        foreach (self::SENSITIVE_SUFFIXES as $suffix) {
+            if (str_ends_with($key, $suffix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
