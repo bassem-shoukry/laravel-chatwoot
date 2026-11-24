@@ -30,10 +30,32 @@ final class CryptTokenVault implements TokenVault
 
         try {
             return $this->encrypter->decryptString($value);
-        } catch (DecryptException) {
-            // Value is plaintext or otherwise unencrypted; fall back so existing
-            // configurations continue to work. Production should always use encrypted tokens.
+        } catch (DecryptException $e) {
+            // A Laravel ciphertext that fails to decrypt was made with another
+            // APP_KEY; sending it as the token would only surface later as a
+            // confusing 401.
+            if (self::looksEncrypted($value)) {
+                throw new ConfigurationException(
+                    'The Chatwoot token looks encrypted but cannot be decrypted with the current APP_KEY.',
+                    0,
+                    $e,
+                );
+            }
+
+            // Plaintext token: pass it through so existing configurations keep working.
             return $value;
         }
+    }
+
+    private static function looksEncrypted(string $value): bool
+    {
+        $decoded = base64_decode($value, true);
+        if ($decoded === false) {
+            return false;
+        }
+
+        $payload = json_decode($decoded, true);
+
+        return is_array($payload) && isset($payload['iv'], $payload['value'], $payload['mac']);
     }
 }

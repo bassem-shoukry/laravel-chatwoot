@@ -15,6 +15,7 @@ use BassamShoukry\LaravelChatwoot\Resources\InboxResource;
 use BassamShoukry\LaravelChatwoot\Resources\LabelResource;
 use BassamShoukry\LaravelChatwoot\Resources\MessageResource;
 use BassamShoukry\LaravelChatwoot\Resources\TeamResource;
+use BassamShoukry\LaravelChatwoot\Support\AccountContext;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Psr\Log\LoggerInterface;
@@ -23,6 +24,15 @@ final class ChatwootManager
 {
     /** @var array<string, ChatwootClient> */
     private array $clients = [];
+
+    /**
+     * The account context each auto-built client was created for, so a
+     * client is rebuilt when its account config changes. Clients registered
+     * through setClient() have no entry and are never replaced.
+     *
+     * @var array<string, AccountContext>
+     */
+    private array $builtFor = [];
 
     private ?string $boundAccount = null;
 
@@ -44,8 +54,15 @@ final class ChatwootManager
     public function client(): ChatwootClient
     {
         $context = $this->accounts->resolve($this->boundAccount);
+        $name = $context->name;
 
-        return $this->clients[$context->name] ??= new ApiClient(
+        if (isset($this->clients[$name]) && (! isset($this->builtFor[$name]) || $this->builtFor[$name] === $context)) {
+            return $this->clients[$name];
+        }
+
+        $this->builtFor[$name] = $context;
+
+        return $this->clients[$name] = new ApiClient(
             http: $this->http,
             config: $this->config,
             logger: $this->logger,
@@ -56,6 +73,7 @@ final class ChatwootManager
     public function setClient(string $name, ChatwootClient $client): void
     {
         $this->clients[$name] = $client;
+        unset($this->builtFor[$name]);
     }
 
     public function conversations(): ConversationResource
