@@ -6,21 +6,48 @@ use BassamShoukry\LaravelChatwoot\LaravelChatwootServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
-it('offers the migrations for publishing without the config file being published first', function (): void {
-    // TestCase sets chatwoot.tracking.enabled=false, as an app that only set
-    // the env var (config not yet published) would see during register().
-    $files = ServiceProvider::pathsToPublish(LaravelChatwootServiceProvider::class, 'chatwoot-migrations');
+/**
+ * Register a fresh provider instance with the given tracking flag, the way
+ * the app boots it (register() runs configurePackage()).
+ *
+ * @return array<string, string>
+ */
+function chatwootMigrationsPublishedWith(?bool $tracking): array
+{
+    ServiceProvider::$publishes = [];
+    ServiceProvider::$publishGroups = [];
+    config()->set('chatwoot.tracking.enabled', $tracking);
 
-    expect($files)->toHaveCount(4);
+    $provider = new LaravelChatwootServiceProvider(app());
+    $provider->register();
+    $provider->boot();
+
+    return ServiceProvider::pathsToPublish(LaravelChatwootServiceProvider::class, 'chatwoot-migrations');
+}
+
+it('offers the migrations when the config file is not published (flag reads null)', function (): void {
+    expect(chatwootMigrationsPublishedWith(null))->toHaveCount(4);
+});
+
+it('offers the migrations when tracking is enabled', function (): void {
+    expect(chatwootMigrationsPublishedWith(true))->toHaveCount(4);
+});
+
+it('keeps the migrations out when the app explicitly disables tracking', function (): void {
+    expect(chatwootMigrationsPublishedWith(false))->toBe([]);
 });
 
 it('never runs the package migrations by itself', function (): void {
+    chatwootMigrationsPublishedWith(true);
+
     $this->artisan('migrate')->assertSuccessful();
 
     expect(Schema::hasTable('chatwoot_contacts'))->toBeFalse();
 });
 
 it('documents publish tags that actually exist', function (): void {
+    chatwootMigrationsPublishedWith(null);
+
     $readme = (string) file_get_contents(__DIR__ . '/../../README.md');
     preg_match_all('/vendor:publish --tag=([\w-]+)/', $readme, $matches);
 

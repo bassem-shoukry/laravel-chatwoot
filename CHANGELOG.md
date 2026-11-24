@@ -57,9 +57,10 @@ All notable changes to `bassem-shoukry/laravel-chatwoot` will be documented in t
   up without a worker restart.
 - `ChatwootFake::swap()` works without any Chatwoot credentials configured,
   and `setClient()` on an `account()` clone reaches the root manager.
-- Migrations are offered for publishing even when the config file is not
-  published; the README now names the real tags (`chatwoot-config`,
-  `chatwoot-migrations`).
+- `CHATWOOT_TRACKING_ENABLED=true` without a published config never offered the
+  migrations (the provider read the flag before the package config was merged).
+  They are now offered unless the app explicitly sets `tracking.enabled=false`.
+  The README now names the real tags (`chatwoot-config`, `chatwoot-migrations`).
 
 ### Added
 

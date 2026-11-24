@@ -122,6 +122,35 @@ it('sends a template with processed params, category and content', function (): 
     });
 });
 
+it('sends an image-header + URL-button template with nested processed params, sent once', function (): void {
+    Http::fake([
+        '*/conversations/42/messages' => Http::response(['id' => 701, 'content' => 'Hi Bassem'], 200),
+    ]);
+
+    $message = app(ChatwootManager::class)->messages()->sendTemplate(
+        conversationId: 42,
+        name: 'winback_offer',
+        language: 'ar',
+        processedParams: [
+            'header'  => ['media_url' => 'https://cdn.example/offer.jpg', 'media_type' => 'image'],
+            'body'    => ['first_name' => 'Bassem'],
+            'buttons' => [['type' => 'url', 'parameter' => '12345']],
+        ],
+        category: 'MARKETING',
+        content: 'Hi Bassem',
+    );
+
+    expect($message->raw['id'])->toBe(701);
+    Http::assertSentCount(1);
+    Http::assertSent(function ($request): bool {
+        $raw = $request->body();
+
+        return str_contains($raw, '"processed_params":{"header":{"media_url":"https:\\/\\/cdn.example\\/offer.jpg","media_type":"image"},"body":{"first_name":"Bassem"},"buttons":[{"type":"url","parameter":"12345"}]}')
+            && $request['template_params']['category'] === 'MARKETING'
+            && $request['template_params']['language'] === 'ar';
+    });
+});
+
 it('sends an empty processed_params object, not an array, when no params are given', function (): void {
     Http::fake([
         '*' => Http::response(['id' => 701], 200),

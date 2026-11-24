@@ -112,9 +112,10 @@ return [
     | Tracking (opt-in)
     |--------------------------------------------------------------------------
     |
-    | Reserved for local mirroring. The package migrations are always
-    | available to publish (`php artisan vendor:publish --tag=chatwoot-migrations`)
-    | and are never run automatically, whatever this flag says.
+    | Set to true to offer the package migrations for publishing
+    | (`php artisan vendor:publish --tag=chatwoot-migrations`). They are never
+    | run automatically. Keep it false if your app already owns tables with
+    | the same names.
     */
     'tracking' => [
         'enabled' => (bool) env('CHATWOOT_TRACKING_ENABLED', false),

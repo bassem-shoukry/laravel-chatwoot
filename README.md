@@ -162,7 +162,9 @@ Available events: `WebhookReceived`, `MessageCreated`, `MessageUpdated`,
 ## Tracking (opt-in)
 
 The package ships optional migrations for local mirroring. They are never run
-automatically; publish them only if you want the tables:
+automatically. Set `CHATWOOT_TRACKING_ENABLED=true` (needed only once you have
+published the config; an unpublished config offers them by default) and publish
+them if you want the tables:
 
 - `chatwoot_contacts`
 - `chatwoot_conversations`
