@@ -18,7 +18,7 @@ Typed Chatwoot API client and webhook receiver for Laravel.
 
 ```bash
 composer require bassem-shoukry/laravel-chatwoot
-php artisan vendor:publish --tag=laravel-chatwoot-config
+php artisan vendor:publish --tag=chatwoot-config
 ```
 
 Set the env keys:
@@ -157,7 +157,8 @@ Available events: `WebhookReceived`, `MessageCreated`, `MessageUpdated`,
 
 ## Tracking (opt-in)
 
-Set `CHATWOOT_TRACKING_ENABLED=true` to enable the package migrations:
+The package ships optional migrations for local mirroring. They are never run
+automatically; publish them only if you want the tables:
 
 - `chatwoot_contacts`
 - `chatwoot_conversations`
@@ -167,7 +168,7 @@ Set `CHATWOOT_TRACKING_ENABLED=true` to enable the package migrations:
 Then publish + run:
 
 ```bash
-php artisan vendor:publish --tag=laravel-chatwoot-migrations
+php artisan vendor:publish --tag=chatwoot-migrations
 php artisan migrate
 ```
 

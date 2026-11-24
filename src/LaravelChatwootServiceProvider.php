@@ -24,19 +24,19 @@ class LaravelChatwootServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
+        // Migrations are only offered for publishing (`chatwoot-migrations`
+        // tag), never run automatically. They used to be gated on
+        // chatwoot.tracking.enabled, but configurePackage() runs before the
+        // package config is merged, so an env-only flag was never seen.
         $package
             ->name('laravel-chatwoot')
-            ->hasConfigFile('chatwoot');
-
-        if ((bool) config('chatwoot.tracking.enabled', false)) {
-            $package
-                ->hasMigrations([
-                    'create_chatwoot_contacts_table',
-                    'create_chatwoot_conversations_table',
-                    'create_chatwoot_messages_table',
-                    'create_chatwoot_webhook_events_table',
-                ]);
-        }
+            ->hasConfigFile('chatwoot')
+            ->hasMigrations([
+                'create_chatwoot_contacts_table',
+                'create_chatwoot_conversations_table',
+                'create_chatwoot_messages_table',
+                'create_chatwoot_webhook_events_table',
+            ]);
     }
 
     public function packageRegistered(): void

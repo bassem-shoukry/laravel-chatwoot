@@ -112,9 +112,9 @@ return [
     | Tracking (opt-in)
     |--------------------------------------------------------------------------
     |
-    | When enabled, the package's migrations are loaded and webhook events
-    | can be persisted via the matching Eloquent models. Apps that don't
-    | need local mirroring should leave this disabled.
+    | Reserved for local mirroring. The package migrations are always
+    | available to publish (`php artisan vendor:publish --tag=chatwoot-migrations`)
+    | and are never run automatically, whatever this flag says.
     */
     'tracking' => [
         'enabled' => (bool) env('CHATWOOT_TRACKING_ENABLED', false),
